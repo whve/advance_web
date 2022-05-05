@@ -1,0 +1,8 @@
+GeoLite2-City.mmdb
+*.zip
+.shp
+.shx
+.prj
+.dbf
+.csv
+Readme.txt

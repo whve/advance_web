@@ -1,0 +1,43 @@
+---
+title: A Fresh Lick of Paint
+author: Carl Goodwin
+date: '2022-04-09'
+slug: renovate
+categories:
+  - R
+tags:
+  - web site
+summary: A couple of years ago I [moved house](/blog/plunge) from Wordpress to [Blogdown](https://bookdown.org/yihui/blogdown/). It's a less stressful life and I plan to stay. [Hugo Academic](https://academic-demo.netlify.app) served me well, but sometimes you just need a fresh coat of paint.
+lastmod: '2022-05-05'
+draft: false
+featured: false
+---
+
+![](/blog/renovate/featured.GIF)
+
+## Motivation
+
+A couple of years ago I [moved house](/blog/plunge) from Wordpress to [Blogdown](https://bookdown.org/yihui/blogdown/). It's proved to be a much less stressful life and I plan to stay. [Hugo Academic](https://academic-demo.netlify.app) served me well, but sometimes you just need a fresh coat of paint. I liked the look of [Hugo Apéro](https://hugo-apero-docs.netlify.app).
+
+Apéro feels simpler and has an elegant design with well-chosen themes and fonts.
+
+I like to add my own digital art to both the site and Rmarkdown projects, and Apéro gives me more flexibility here.  GIF animations, for example, on my [home page](/.) and in my project and [blog](/blog/) lists just work.
+
+The dark mode I had with Academic would be a nice-to-have, but not essential.
+
+## Plan of Attack
+
+The upgrade approach I took was to create a brand new blogdown project in RStudio with the Apéro theme and then copy over and re-knit my projects one by one. This worked well because every project needed at least one change as a direct consequence of the move and re-opening each project also prompted other beneficial updates.
+
+I focused first on manual deployment, i.e. dragging the Public folder to Netlify, rather than going straight to continuous deployment via Github. Doing it this way would narrow the potential cause of any problems when doing the latter. I also initially deployed to one of Netlify's auto-generated site names, so my live manually-deployed Academic blog remained unaffected whilst preparing the new site.
+
+## Set-up
+
+There's a very helpful [get started](https://hugo-apero-docs.netlify.app/start/) authored by the theme owner Alison Hill, so I'll comment here only on the personal touches I wanted to add.
+
+In Hugo Academic, each project's (or post's) feature image rendered automatically in both the project list page and in the individual project. In Apéro, I needed to add `![](pathname)` to the Rmarkdown file to render the image in an individual project or post. I actually prefer this approach because it means the image then also appears when re-publishing to a blog aggregator which frustratingly was not the case with Academic.
+
+Given the taxonomy differences, I created a `static/_redirects` file so that bookmarks for, say, `category/r` or `tag/statistical-inference` (under Academic) would go to `categories/r` or `tags/statistical-inference`.
+
+
+
