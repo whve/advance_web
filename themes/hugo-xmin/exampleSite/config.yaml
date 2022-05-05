@@ -1,0 +1,52 @@
+baseurl: "/"
+languageCode: "en-us"
+title: "A minimal Hugo website"
+theme: "hugo-xmin"
+googleAnalytics: ""
+disqusShortname: ""
+ignoreFiles: ["\\.Rmd$", "\\.Rmarkdown$", "_cache$", "\\.knit\\.md$", "\\.utf8\\.md$"]
+footnotereturnlinkcontents: "↩"
+
+permalinks:
+  note: "/note/:year/:month/:day/:slug/"
+  post: "/post/:year/:month/:day/:slug/"
+
+menu:
+  main:
+    - name: summary|home
+      url: ""
+      weight: 1
+    - name: abstract|about
+      url: "about/"
+      weight: 2
+    - name: blogs
+      url: "blogs/"
+      weight: 3
+    - name: notes
+      url: "notes/"
+      weight: 4
+    - name: projects
+      url: "projects/"
+      weight: 5
+    - name: 中文
+      url: "chinese/"
+      weight: 6
+    - name: categories|series
+      url: "categories/"
+      weight: 7
+    - name: traits|tags
+      url: "tags/"
+      weight: 8
+    - name: subscribe|rss
+      url: "index.xml"
+
+params:
+  description: "A website built through Hugo and blogdown."
+  footer: "&copy; [Zhe Wang]() 2022 -- {Year} | [Github](https://github.com/whve) | [Twitter](https://twitter.com/whve6)"
+
+markup:
+  highlight:
+    codeFences: false
+  goldmark:
+    renderer:
+      unsafe: true

@@ -1,0 +1,20 @@
+---
+title: Home
+---
+
+[<img src="https://simpleicons.org/icons/github.svg" style="max-width:15%;min-width:40px;float:right;" alt="Github repo" />](https://github.com/yihui/hugo-xmin)
+
+# whVe lab
+
+## _Keep it simple, but not simpler_
+
+This XMin theme contains about 130 lines of code in total, including the code in HTML templates and CSS (also counting empty lines).
+
+```{bash, comment='', echo=3, eval=Sys.which('bash') != '', message=FALSE}
+cd ../..;
+if [ ! -f 'theme.toml' ]; then exit 0; fi  # only run find below within the theme example site
+find . -not -path '*/exampleSite/*' \( -name '*.html' -o -name '*.css' \) | xargs wc -l
+```
+
+
+All pages not under the root directory of the website are listed below. You can also visit the list page of a single section, e.g., [posts](/post/), or [notes](/note/). See the [About](/about/) page for the usage of this theme.

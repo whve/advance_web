@@ -1,0 +1,2162 @@
+---
+title: 玩转数据处理120题
+author: whve
+date: '2022-05-05'
+slug: r_tidyverse_120
+categories:
+  - tutorial
+tags:
+  - tidyverse
+---
+
+
+
+<p><strong>玩转数据120题</strong>来自刘早起的 <em>Pandas 进阶修炼 120 题</em>，涵盖了数据处理、计算、可视化等常用操作，希望通过 120 道精心挑选的习题吃透 pandas.</p>
+<p>后来，中山大学博士陈熹提供了 R 语言版本。张静信<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a><a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>再来个更能体现 R 语言最新技术的 tidyverse 版本。</p>
+<p>先加载：</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<div id="part-i-入门" class="section level2">
+<h2>Part I 入门</h2>
+<div id="题目1创建数据框将下面的字典创建为dataframe" class="section level3">
+<h3>题目1（创建数据框）：将下面的字典创建为DataFrame</h3>
+<p><code>data = {"grammer": ["Python","C","Java","GO",np.nan,"SQL","PHP","Python"], "score": [1,2,np.nan,4,5,6,7,10]}</code></p>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df = tibble(
+  grammer = c(&quot;Python&quot;,&quot;C&quot;,&quot;Java&quot;,&quot;GO&quot;, NA,&quot;SQL&quot;,&quot;PHP&quot;,&quot;Python&quot;), 
+  score = c(1,2,NA,4,5,6,7,10)
+  )
+df</code></pre>
+<pre><code>## # A tibble: 8 × 2
+##   grammer score
+##   &lt;chr&gt;   &lt;dbl&gt;
+## 1 Python      1
+## 2 C           2
+## 3 Java       NA
+## 4 GO          4
+## 5 &lt;NA&gt;        5
+## 6 SQL         6
+## # … with 2 more rows</code></pre>
+<ul>
+<li><strong>补充：</strong>按行录入式创建数据框</li>
+</ul>
+<pre class="r"><code>df = tribble(
+  ~ grammer, ~ score,
+  &quot;Python&quot;,  1,
+  &quot;C&quot;,       2,
+  &quot;Java&quot;,    NA,
+  &quot;GO&quot;,      4,
+  NA,        5,
+  &quot;SQL&quot;,     6,
+  &quot;PHP&quot;,     7,
+  &quot;Python&quot;,  10
+)</code></pre>
+</div>
+<div id="问题2筛选行提取含有字符串python的行" class="section level3">
+<h3>问题2（筛选行）：提取含有字符串”Python”的行</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;%
+  filter(grammer == &quot;Python&quot;)</code></pre>
+<pre><code>## # A tibble: 2 × 2
+##   grammer score
+##   &lt;chr&gt;   &lt;dbl&gt;
+## 1 Python      1
+## 2 Python     10</code></pre>
+</div>
+<div id="题目3查看列名输出df的所有列名" class="section level3">
+<h3>题目3（查看列名）：输出df的所有列名</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>names(df)</code></pre>
+<pre><code>## [1] &quot;grammer&quot; &quot;score&quot;</code></pre>
+</div>
+<div id="题目4修改列名修改第2列列名为popularity" class="section level3">
+<h3>题目4（修改列名）：修改第2列列名为”popularity”</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df = df %&gt;%
+  rename(popularity = score)
+df</code></pre>
+<pre><code>## # A tibble: 8 × 2
+##   grammer popularity
+##   &lt;chr&gt;        &lt;dbl&gt;
+## 1 Python           1
+## 2 C                2
+## 3 Java            NA
+## 4 GO               4
+## 5 &lt;NA&gt;             5
+## 6 SQL              6
+## # … with 2 more rows</code></pre>
+</div>
+<div id="题目5统计频数统计grammer列中每种编程语言出现的次数" class="section level3">
+<h3>题目5（统计频数）：统计grammer列中每种编程语言出现的次数</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code># table(df$grammer)
+# 或者
+df %&gt;%
+  count(grammer) </code></pre>
+<pre><code>## # A tibble: 7 × 2
+##   grammer     n
+##   &lt;chr&gt;   &lt;int&gt;
+## 1 C           1
+## 2 GO          1
+## 3 Java        1
+## 4 PHP         1
+## 5 Python      2
+## 6 SQL         1
+## # … with 1 more row</code></pre>
+</div>
+<div id="题目6缺失值处理将空值用上下值的平均值填充" class="section level3">
+<h3>题目6（缺失值处理）：将空值用上下值的平均值填充</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df = df %&gt;%
+  mutate(popularity = zoo::na.approx(popularity))
+df</code></pre>
+<pre><code>## # A tibble: 8 × 2
+##   grammer popularity
+##   &lt;chr&gt;        &lt;dbl&gt;
+## 1 Python           1
+## 2 C                2
+## 3 Java             3
+## 4 GO               4
+## 5 &lt;NA&gt;             5
+## 6 SQL              6
+## # … with 2 more rows</code></pre>
+<p><strong>注：</strong> tidyr包提供了<code>fill()</code>函数，可以用前值或后值插补缺失值。</p>
+</div>
+<div id="题目7筛选行提取popularity列中值大于3的行" class="section level3">
+<h3>题目7（筛选行）：提取popularity列中值大于3的行</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;%
+  filter(popularity &gt; 3)</code></pre>
+<pre><code>## # A tibble: 5 × 2
+##   grammer popularity
+##   &lt;chr&gt;        &lt;dbl&gt;
+## 1 GO               4
+## 2 &lt;NA&gt;             5
+## 3 SQL              6
+## 4 PHP              7
+## 5 Python          10</code></pre>
+</div>
+<div id="题目8数据去重按grammer列进行去重" class="section level3">
+<h3>题目8（数据去重）：按grammer列进行去重</h3>
+<p><strong>难度：</strong> <span class="math inline">\(\star \star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;%
+  distinct(grammer, .keep_all = TRUE)</code></pre>
+<pre><code>## # A tibble: 7 × 2
+##   grammer popularity
+##   &lt;chr&gt;        &lt;dbl&gt;
+## 1 Python           1
+## 2 C                2
+## 3 Java             3
+## 4 GO               4
+## 5 &lt;NA&gt;             5
+## 6 SQL              6
+## # … with 1 more row</code></pre>
+</div>
+<div id="题目9数据计算计算popularity列平均值" class="section level3">
+<h3>题目9（数据计算）：计算popularity列平均值</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;%
+  summarise(popularity_avg = mean(popularity))</code></pre>
+<pre><code>## # A tibble: 1 × 1
+##   popularity_avg
+##            &lt;dbl&gt;
+## 1           4.75</code></pre>
+</div>
+<div id="题目10格式转换将grammer列转换为序列" class="section level3">
+<h3>题目10（格式转换）：将grammer列转换为序列</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code># df$grammer    
+
+# 或者
+# df %&gt;% 
+#  .$grammer    
+
+# 或者
+df %&gt;% 
+  pull(grammer)</code></pre>
+<pre><code>## [1] &quot;Python&quot; &quot;C&quot;      &quot;Java&quot;   &quot;GO&quot;     NA       &quot;SQL&quot;    &quot;PHP&quot;    &quot;Python&quot;</code></pre>
+</div>
+<div id="题目11数据保存将数据框保存为excel" class="section level3">
+<h3>题目11（数据保存）：将数据框保存为Excel</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+</div>
+<div id="题目12数据查看查看数据的行数列数" class="section level3">
+<h3>题目12（数据查看）：查看数据的行数列数</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>dim(df)</code></pre>
+<pre><code>## [1] 8 2</code></pre>
+</div>
+<div id="题目13筛选行提取popularity列值大于3小于7的行" class="section level3">
+<h3>题目13（筛选行）：提取popularity列值大于3小于7的行</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;%
+  filter(popularity &gt; 3 &amp; popularity &lt; 7)</code></pre>
+<pre><code>## # A tibble: 3 × 2
+##   grammer popularity
+##   &lt;chr&gt;        &lt;dbl&gt;
+## 1 GO               4
+## 2 &lt;NA&gt;             5
+## 3 SQL              6</code></pre>
+</div>
+<div id="题目14调整列位置交互两列的位置" class="section level3">
+<h3>题目14（调整列位置）：交互两列的位置</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;%
+  select(popularity, grammer)</code></pre>
+<pre><code>## # A tibble: 8 × 2
+##   popularity grammer
+##        &lt;dbl&gt; &lt;chr&gt;  
+## 1          1 Python 
+## 2          2 C      
+## 3          3 Java   
+## 4          4 GO     
+## 5          5 &lt;NA&gt;   
+## 6          6 SQL    
+## # … with 2 more rows</code></pre>
+<p><strong>注：</strong> 可配合<code>everything()</code>放置”其余列”，更强大的调整列位置的函数是dplyr1.0将提供的<code>relacate()</code>.</p>
+</div>
+<div id="题目15筛选行提取popularity列最大值所在的行" class="section level3">
+<h3>题目15（筛选行）：提取popularity列最大值所在的行</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  slice_max(popularity)     </code></pre>
+<pre><code>## # A tibble: 1 × 2
+##   grammer popularity
+##   &lt;chr&gt;        &lt;dbl&gt;
+## 1 Python          10</code></pre>
+<pre class="r"><code># 或者
+# df %&gt;%
+#  filter(popularity == max(popularity))</code></pre>
+</div>
+<div id="题目16查看数据查看最后几行数据" class="section level3">
+<h3>题目16（查看数据）：查看最后几行数据</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code># tail(df)   # 默认是最后6行, 或者
+df %&gt;% 
+  slice_tail(n = 6)</code></pre>
+<pre><code>## # A tibble: 6 × 2
+##   grammer popularity
+##   &lt;chr&gt;        &lt;dbl&gt;
+## 1 Java             3
+## 2 GO               4
+## 3 &lt;NA&gt;             5
+## 4 SQL              6
+## 5 PHP              7
+## 6 Python          10</code></pre>
+<p><strong>注：</strong> 此外，<code>dplyr</code>包还提供了<code>slice_head()</code>查看前<code>n</code>行或前某比例的行，<code>slice_sample()</code>随机查看<code>n</code>行或某比例的行。</p>
+</div>
+<div id="题目17修改数据删除最后一行数据" class="section level3">
+<h3>题目17（修改数据）：删除最后一行数据</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;%
+  slice(-n()) # 1:n() # all data </code></pre>
+<pre><code>## # A tibble: 7 × 2
+##   grammer popularity
+##   &lt;chr&gt;        &lt;dbl&gt;
+## 1 Python           1
+## 2 C                2
+## 3 Java             3
+## 4 GO               4
+## 5 &lt;NA&gt;             5
+## 6 SQL              6
+## # … with 1 more row</code></pre>
+<pre class="r"><code>df %&gt;%
+  slice(n())</code></pre>
+<pre><code>## # A tibble: 1 × 2
+##   grammer popularity
+##   &lt;chr&gt;        &lt;dbl&gt;
+## 1 Python          10</code></pre>
+</div>
+<div id="题目18修改数据添加一行数据perl-6" class="section level3">
+<h3>题目18（修改数据）：添加一行数据：“Perl”, 6</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;%
+  bind_rows(tibble(grammer=&quot;Perl&quot;, popularity=6)) </code></pre>
+<pre><code>## # A tibble: 9 × 2
+##   grammer popularity
+##   &lt;chr&gt;        &lt;dbl&gt;
+## 1 Python           1
+## 2 C                2
+## 3 Java             3
+## 4 GO               4
+## 5 &lt;NA&gt;             5
+## 6 SQL              6
+## # … with 3 more rows</code></pre>
+<pre class="r"><code># 或者
+# df %&gt;% 
+#   add_row(grammer=&quot;Perl&quot;, popularity=6)</code></pre>
+</div>
+<div id="题目19数据整理对数据按popularity列值从到大到小排序" class="section level3">
+<h3>题目19（数据整理）：对数据按popularity列值从到大到小排序</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;%
+  arrange(-popularity)  </code></pre>
+<pre><code>## # A tibble: 8 × 2
+##   grammer popularity
+##   &lt;chr&gt;        &lt;dbl&gt;
+## 1 Python          10
+## 2 PHP              7
+## 3 SQL              6
+## 4 &lt;NA&gt;             5
+## 5 GO               4
+## 6 Java             3
+## # … with 2 more rows</code></pre>
+<pre class="r"><code># 或者
+# df %&gt;%
+#  arrange(desc(popularity))</code></pre>
+<p><strong>注：</strong> 默认从小到大排序。</p>
+</div>
+<div id="题目20字符统计统计grammer列每个字符串的长度" class="section level3">
+<h3>题目20（字符统计）：统计grammer列每个字符串的长度</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;%
+  mutate(strlen = str_length(grammer))</code></pre>
+<pre><code>## # A tibble: 8 × 3
+##   grammer popularity strlen
+##   &lt;chr&gt;        &lt;dbl&gt;  &lt;int&gt;
+## 1 Python           1      6
+## 2 C                2      1
+## 3 Java             3      4
+## 4 GO               4      2
+## 5 &lt;NA&gt;             5     NA
+## 6 SQL              6      3
+## # … with 2 more rows</code></pre>
+</div>
+</div>
+<div id="part-ii-基础" class="section level2">
+<h2>Part II 基础</h2>
+<div id="题目21读取数据读取本地excel数据" class="section level3">
+<h3>题目21（读取数据）：读取本地Excel数据</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df = readxl::read_xlsx(&quot;datas/21-50数据.xlsx&quot;)
+df</code></pre>
+<pre><code>## # A tibble: 135 × 3
+##   createTime          education salary 
+##   &lt;dttm&gt;              &lt;chr&gt;     &lt;chr&gt;  
+## 1 2020-03-16 11:30:18 本科      20k-35k
+## 2 2020-03-16 10:58:48 本科      20k-40k
+## 3 2020-03-16 10:46:39 不限      20k-35k
+## 4 2020-03-16 10:45:44 本科      13k-20k
+## 5 2020-03-16 10:20:41 本科      10k-20k
+## 6 2020-03-16 10:33:48 本科      10k-18k
+## # … with 129 more rows</code></pre>
+</div>
+<div id="题目22查看数据查看df数据的前几行" class="section level3">
+<h3>题目22（查看数据）：查看df数据的前几行</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>head(df)   </code></pre>
+<pre><code>## # A tibble: 6 × 3
+##   createTime          education salary 
+##   &lt;dttm&gt;              &lt;chr&gt;     &lt;chr&gt;  
+## 1 2020-03-16 11:30:18 本科      20k-35k
+## 2 2020-03-16 10:58:48 本科      20k-40k
+## 3 2020-03-16 10:46:39 不限      20k-35k
+## 4 2020-03-16 10:45:44 本科      13k-20k
+## 5 2020-03-16 10:20:41 本科      10k-20k
+## 6 2020-03-16 10:33:48 本科      10k-18k</code></pre>
+<pre class="r"><code># 或者
+# df %&gt;% 
+#  slice_head(n = 6)</code></pre>
+</div>
+<div id="题目23数据计算将salary列数据转换为最大值与最小值的平均值" class="section level3">
+<h3>题目23（数据计算）：将salary列数据转换为最大值与最小值的平均值</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df = df %&gt;%
+  separate(salary, into = c(&quot;low&quot;, &quot;high&quot;), sep = &quot;-&quot;) %&gt;%  # sep=&quot;-&quot;也可以省略
+  mutate(salary = (parse_number(low) + parse_number(high)) * 1000 / 2) %&gt;%
+  select(-c(low, high))
+df</code></pre>
+<pre><code>## # A tibble: 135 × 3
+##   createTime          education salary
+##   &lt;dttm&gt;              &lt;chr&gt;      &lt;dbl&gt;
+## 1 2020-03-16 11:30:18 本科       27500
+## 2 2020-03-16 10:58:48 本科       30000
+## 3 2020-03-16 10:46:39 不限       27500
+## 4 2020-03-16 10:45:44 本科       16500
+## 5 2020-03-16 10:20:41 本科       15000
+## 6 2020-03-16 10:33:48 本科       14000
+## # … with 129 more rows</code></pre>
+<p>或者来个高级的，用正则表达式提取数字，定义做计算的函数，再<code>purrr::map_dbl</code>做循环计算：</p>
+<pre class="r"><code>calc = function(x) sum(as.numeric(unlist(x))) * 1000 / 2
+
+df %&gt;%
+  mutate(salary = map_dbl(str_extract_all(salary, &quot;\\d+&quot;), calc))   # 结果同上(略)</code></pre>
+</div>
+<div id="题目24分组汇总根据学历分组并计算平均薪资" class="section level3">
+<h3>题目24（分组汇总）：根据学历分组，并计算平均薪资</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  group_by(education) %&gt;% 
+  summarise(salary_avg = mean(salary))</code></pre>
+<pre><code>## # A tibble: 4 × 2
+##   education salary_avg
+##   &lt;chr&gt;          &lt;dbl&gt;
+## 1 不限          19600 
+## 2 大专          10000 
+## 3 本科          19361.
+## 4 硕士          20643.</code></pre>
+</div>
+<div id="题目25时间转换将createtime列转换为月-日" class="section level3">
+<h3>题目25（时间转换）：将createTime列转换为”月-日”</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>library(lubridate)
+
+df %&gt;% 
+  mutate(createTime = str_sub(createTime, 6, 10))  </code></pre>
+<pre><code>## # A tibble: 135 × 3
+##   createTime education salary
+##   &lt;chr&gt;      &lt;chr&gt;      &lt;dbl&gt;
+## 1 03-16      本科       27500
+## 2 03-16      本科       30000
+## 3 03-16      不限       27500
+## 4 03-16      本科       16500
+## 5 03-16      本科       15000
+## 6 03-16      本科       14000
+## # … with 129 more rows</code></pre>
+<pre class="r"><code># 或者
+# df %&gt;% 
+#   mutate(createTime = str_extract(createTime, &quot;(?&lt;=-).*(?=\\s)&quot;))
+
+# 或者          
+# df %&gt;% 
+#  mutate(createTime = str_c(str_pad(month(createTime), 2, pad=&quot;0&quot;), &quot;-&quot;, day(createTime)))</code></pre>
+</div>
+<div id="题目26查看数据查看数据结构信息" class="section level3">
+<h3>题目26（查看数据）：查看数据结构信息</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  glimpse()       # 或者用str()</code></pre>
+<pre><code>## Rows: 135
+## Columns: 3
+## $ createTime &lt;dttm&gt; 2020-03-16 11:30:18, 2020-03-16 10:58:48, 2020-03-16 10:46…
+## $ education  &lt;chr&gt; &quot;本科&quot;, &quot;本科&quot;, &quot;不限&quot;, &quot;本科&quot;, &quot;本科&quot;, &quot;本科&quot;, &quot;硕士&quot;, &quot;本…
+## $ salary     &lt;dbl&gt; 27500, 30000, 27500, 16500, 15000, 14000, 23000, 12500, 700…</code></pre>
+<pre class="r"><code>object.size(df)   # 查看对象占用内存</code></pre>
+<pre><code>## 5112 bytes</code></pre>
+</div>
+<div id="题目27查看数据查看数据汇总信息" class="section level3">
+<h3>题目27（查看数据）：查看数据汇总信息</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>summary(df)</code></pre>
+<pre><code>##    createTime                   education             salary     
+##  Min.   :2020-03-13 18:01:31   Length:135         Min.   : 3500  
+##  1st Qu.:2020-03-16 10:41:19   Class :character   1st Qu.:14000  
+##  Median :2020-03-16 11:00:27   Mode  :character   Median :17500  
+##  Mean   :2020-03-16 10:16:35                      Mean   :19159  
+##  3rd Qu.:2020-03-16 11:19:03                      3rd Qu.:25000  
+##  Max.   :2020-03-16 11:36:07                      Max.   :45000</code></pre>
+</div>
+<div id="题目28修改列新增一列将salary离散化为三水平值" class="section level3">
+<h3>题目28（修改列）：新增一列将salary离散化为三水平值</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df = df %&gt;%
+  mutate(class = case_when(
+    salary &gt;= 0 &amp; salary &lt; 5000     ~ &quot;低&quot;,
+    salary &gt;= 5000 &amp; salary &lt; 20000 ~ &quot;中&quot;,
+    TRUE                            ~ &quot;高&quot;))  # TRUE效果是其它
+df</code></pre>
+<pre><code>## # A tibble: 135 × 4
+##   createTime          education salary class
+##   &lt;dttm&gt;              &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;
+## 1 2020-03-16 11:30:18 本科       27500 高   
+## 2 2020-03-16 10:58:48 本科       30000 高   
+## 3 2020-03-16 10:46:39 不限       27500 高   
+## 4 2020-03-16 10:45:44 本科       16500 中   
+## 5 2020-03-16 10:20:41 本科       15000 中   
+## 6 2020-03-16 10:33:48 本科       14000 中   
+## # … with 129 more rows</code></pre>
+<ul>
+<li>或者用<code>cut()</code>函数：</li>
+</ul>
+<pre class="r"><code>df %&gt;% 
+  mutate(class = cut(salary, 
+                     breaks = c(0,5000,20000,Inf), 
+                     labels = c(&quot;低&quot;, &quot;中&quot;, &quot;高&quot;),
+                     right = FALSE))</code></pre>
+<ul>
+<li>或者用<code>sjmisc</code>包中的<code>rec()</code>，和SPSS的重新编码一样强大。</li>
+</ul>
+<pre class="r"><code>df %&gt;%
+  mutate(class = sjmisc::rec(salary,
+    rec = &quot;min:5000 = 低; 5000:20000 = 中; 20000:max = 高&quot;))</code></pre>
+</div>
+<div id="题目29数据整理按salary列对数据降序排列" class="section level3">
+<h3>题目29（数据整理）：按salary列对数据降序排列</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  arrange(-salary)  # 或用 desc(salary)</code></pre>
+<pre><code>## # A tibble: 135 × 4
+##   createTime          education salary class
+##   &lt;dttm&gt;              &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;
+## 1 2020-03-16 11:30:17 本科       45000 高   
+## 2 2020-03-16 11:04:00 本科       40000 高   
+## 3 2020-03-16 10:36:57 本科       37500 高   
+## 4 2020-03-16 11:01:39 本科       37500 高   
+## 5 2020-03-16 09:54:47 硕士       37500 高   
+## 6 2020-03-16 11:01:22 本科       35000 高   
+## # … with 129 more rows</code></pre>
+</div>
+<div id="题目30筛选行提取第33行数据" class="section level3">
+<h3>题目30（筛选行）：提取第33行数据</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  slice(33)       # 或者用df[33,] </code></pre>
+<pre><code>## # A tibble: 1 × 4
+##   createTime          education salary class
+##   &lt;dttm&gt;              &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;
+## 1 2020-03-16 10:07:25 硕士       22500 高</code></pre>
+</div>
+<div id="题目31数据计算计算salary列的中位数" class="section level3">
+<h3>题目31（数据计算）：计算salary列的中位数</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code># median(df$salary)  
+# 或者
+df %&gt;% 
+  summarise(salary_med = median(salary))</code></pre>
+<pre><code>## # A tibble: 1 × 1
+##   salary_med
+##        &lt;dbl&gt;
+## 1      17500</code></pre>
+</div>
+<div id="题目32数据可视化绘制salary的频率分布直方图" class="section level3">
+<h3>题目32（数据可视化）：绘制salary的频率分布直方图</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;%
+  ggplot(aes(x = salary)) +
+  geom_histogram(bins = 10)</code></pre>
+<p><img src="/projects/2022-05-05-120/r_tidyverse_120_files/figure-html/unnamed-chunk-38-1.png" width="672" /></p>
+</div>
+<div id="题目33数据可视化绘制salary的频率密度曲线图" class="section level3">
+<h3>题目33（数据可视化）：绘制salary的频率密度曲线图</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;%
+  ggplot(aes(x = salary)) +
+  geom_density()</code></pre>
+<p><img src="/projects/2022-05-05-120/r_tidyverse_120_files/figure-html/unnamed-chunk-39-1.png" width="672" /></p>
+</div>
+<div id="题目34数据删除删除最后一列class" class="section level3">
+<h3>题目34（数据删除）：删除最后一列class</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  select(-class)</code></pre>
+<pre><code>## # A tibble: 135 × 3
+##   createTime          education salary
+##   &lt;dttm&gt;              &lt;chr&gt;      &lt;dbl&gt;
+## 1 2020-03-16 11:30:18 本科       27500
+## 2 2020-03-16 10:58:48 本科       30000
+## 3 2020-03-16 10:46:39 不限       27500
+## 4 2020-03-16 10:45:44 本科       16500
+## 5 2020-03-16 10:20:41 本科       15000
+## 6 2020-03-16 10:33:48 本科       14000
+## # … with 129 more rows</code></pre>
+<pre class="r"><code># 或者
+# df %&gt;% 
+#  select(-last_col())  # 同last_col(0)</code></pre>
+</div>
+<div id="题目35数据操作将df的第1列与第2列合并为新的一列" class="section level3">
+<h3>题目35（数据操作）：将df的第1列与第2列合并为新的一列</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  unite(&quot;newcol&quot;, 1:2, sep = &quot; &quot;)</code></pre>
+<pre><code>## # A tibble: 135 × 3
+##   newcol                   salary class
+##   &lt;chr&gt;                     &lt;dbl&gt; &lt;chr&gt;
+## 1 2020-03-16 11:30:18 本科  27500 高   
+## 2 2020-03-16 10:58:48 本科  30000 高   
+## 3 2020-03-16 10:46:39 不限  27500 高   
+## 4 2020-03-16 10:45:44 本科  16500 中   
+## 5 2020-03-16 10:20:41 本科  15000 中   
+## 6 2020-03-16 10:33:48 本科  14000 中   
+## # … with 129 more rows</code></pre>
+</div>
+<div id="题目36数据操作将education列与第salary列合并为新的一列" class="section level3">
+<h3>题目36（数据操作）：将education列与第salary列合并为新的一列</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  unite(&quot;newcol&quot;, c(education, salary), sep = &quot; &quot;)</code></pre>
+<pre><code>## # A tibble: 135 × 3
+##   createTime          newcol     class
+##   &lt;dttm&gt;              &lt;chr&gt;      &lt;chr&gt;
+## 1 2020-03-16 11:30:18 本科 27500 高   
+## 2 2020-03-16 10:58:48 本科 30000 高   
+## 3 2020-03-16 10:46:39 不限 27500 高   
+## 4 2020-03-16 10:45:44 本科 16500 中   
+## 5 2020-03-16 10:20:41 本科 15000 中   
+## 6 2020-03-16 10:33:48 本科 14000 中   
+## # … with 129 more rows</code></pre>
+</div>
+<div id="题目37数据计算计算salary最大值与最小值之差" class="section level3">
+<h3>题目37（数据计算）：计算salary最大值与最小值之差</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>max(df$salary) - min(df$salary)</code></pre>
+<pre><code>## [1] 41500</code></pre>
+<p>或者用</p>
+<pre class="r"><code>df %&gt;% 
+  summarise(range = max(salary) - min(salary))</code></pre>
+<pre><code>## # A tibble: 1 × 1
+##   range
+##   &lt;dbl&gt;
+## 1 41500</code></pre>
+</div>
+<div id="题目38数据操作将第一行与最后一行拼接" class="section level3">
+<h3>题目38（数据操作）：将第一行与最后一行拼接</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  slice(1, n())</code></pre>
+<pre><code>## # A tibble: 2 × 4
+##   createTime          education salary class
+##   &lt;dttm&gt;              &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;
+## 1 2020-03-16 11:30:18 本科       27500 高   
+## 2 2020-03-16 11:19:38 本科       30000 高</code></pre>
+</div>
+<div id="题目39数据操作将第8行添加到末尾" class="section level3">
+<h3>题目39（数据操作）：将第8行添加到末尾</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  bind_rows(slice(., 8))</code></pre>
+<pre><code>## # A tibble: 136 × 4
+##   createTime          education salary class
+##   &lt;dttm&gt;              &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;
+## 1 2020-03-16 11:30:18 本科       27500 高   
+## 2 2020-03-16 10:58:48 本科       30000 高   
+## 3 2020-03-16 10:46:39 不限       27500 高   
+## 4 2020-03-16 10:45:44 本科       16500 中   
+## 5 2020-03-16 10:20:41 本科       15000 中   
+## 6 2020-03-16 10:33:48 本科       14000 中   
+## # … with 130 more rows</code></pre>
+</div>
+<div id="题目40查看数据查看每一列的数据类型" class="section level3">
+<h3>题目40（查看数据）：查看每一列的数据类型</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  glimpse()     # 或者用str()</code></pre>
+<pre><code>## Rows: 135
+## Columns: 4
+## $ createTime &lt;dttm&gt; 2020-03-16 11:30:18, 2020-03-16 10:58:48, 2020-03-16 10:46…
+## $ education  &lt;chr&gt; &quot;本科&quot;, &quot;本科&quot;, &quot;不限&quot;, &quot;本科&quot;, &quot;本科&quot;, &quot;本科&quot;, &quot;硕士&quot;, &quot;本…
+## $ salary     &lt;dbl&gt; 27500, 30000, 27500, 16500, 15000, 14000, 23000, 12500, 700…
+## $ class      &lt;chr&gt; &quot;高&quot;, &quot;高&quot;, &quot;高&quot;, &quot;中&quot;, &quot;中&quot;, &quot;中&quot;, &quot;高&quot;, &quot;中&quot;, &quot;中&quot;, &quot;中&quot;,…</code></pre>
+</div>
+<div id="题目41数据操作将createtime列设置为行索引" class="section level3">
+<h3>题目41（数据操作）：将createTime列设置为行索引</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  distinct(createTime, .keep_all = TRUE) %&gt;% 
+  column_to_rownames(&quot;createTime&quot;) %&gt;% 
+  head()</code></pre>
+<pre><code>##                     education salary class
+## 2020-03-16 11:30:18      本科  27500    高
+## 2020-03-16 10:58:48      本科  30000    高
+## 2020-03-16 10:46:39      不限  27500    高
+## 2020-03-16 10:45:44      本科  16500    中
+## 2020-03-16 10:20:41      本科  15000    中
+## 2020-03-16 10:33:48      本科  14000    中</code></pre>
+<p><strong>注：</strong> 行索引不允许有重复，所以先做了一步去重。</p>
+</div>
+<div id="题目42数据创建生成一个和df长度相同的随机数数据框" class="section level3">
+<h3>题目42（数据创建）：生成一个和df长度相同的随机数数据框</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df1 = tibble(rnums = sample.int(10, nrow(df), replace = TRUE))
+  df1</code></pre>
+<pre><code>## # A tibble: 135 × 1
+##   rnums
+##   &lt;int&gt;
+## 1     8
+## 2     9
+## 3     7
+## 4     8
+## 5    10
+## 6     5
+## # … with 129 more rows</code></pre>
+</div>
+<div id="题目43数据连接将上面生成的数据框与df按列合并" class="section level3">
+<h3>题目43（数据连接）：将上面生成的数据框与df按列合并</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df = bind_cols(df, df1)
+df</code></pre>
+<pre><code>## # A tibble: 135 × 5
+##   createTime          education salary class rnums
+##   &lt;dttm&gt;              &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt; &lt;int&gt;
+## 1 2020-03-16 11:30:18 本科       27500 高        8
+## 2 2020-03-16 10:58:48 本科       30000 高        9
+## 3 2020-03-16 10:46:39 不限       27500 高        7
+## 4 2020-03-16 10:45:44 本科       16500 中        8
+## 5 2020-03-16 10:20:41 本科       15000 中       10
+## 6 2020-03-16 10:33:48 本科       14000 中        5
+## # … with 129 more rows</code></pre>
+</div>
+<div id="题目44修改列生成新列new为salary列减去随机数列" class="section level3">
+<h3>题目44（修改列）：生成新列new为salary列减去随机数列</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df = df %&gt;% 
+  mutate(new = salary - rnums)
+df</code></pre>
+<pre><code>## # A tibble: 135 × 6
+##   createTime          education salary class rnums   new
+##   &lt;dttm&gt;              &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt; &lt;int&gt; &lt;dbl&gt;
+## 1 2020-03-16 11:30:18 本科       27500 高        8 27492
+## 2 2020-03-16 10:58:48 本科       30000 高        9 29991
+## 3 2020-03-16 10:46:39 不限       27500 高        7 27493
+## 4 2020-03-16 10:45:44 本科       16500 中        8 16492
+## 5 2020-03-16 10:20:41 本科       15000 中       10 14990
+## 6 2020-03-16 10:33:48 本科       14000 中        5 13995
+## # … with 129 more rows</code></pre>
+</div>
+<div id="题目45检查缺失值检查数据中是否含有任何缺失值" class="section level3">
+<h3>题目45（检查缺失值）：检查数据中是否含有任何缺失值</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>anyNA(df)</code></pre>
+<pre><code>## [1] FALSE</code></pre>
+<pre class="r"><code>anyNA(df$salary)</code></pre>
+<pre><code>## [1] FALSE</code></pre>
+<p><strong>注：</strong> naniar包提供了更强大的探索缺失值及缺失模式的函数，其中<code>miss_var_summary()</code>和<code>miss_case_summary()</code>可检查各列和各行缺失情况。</p>
+</div>
+<div id="题目46类型转换将salary列的类型转换为浮点数" class="section level3">
+<h3>题目46（类型转换）：将salary列的类型转换为浮点数</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  mutate(rnums = as.double(rnums))</code></pre>
+<pre><code>## # A tibble: 135 × 6
+##   createTime          education salary class rnums   new
+##   &lt;dttm&gt;              &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 2020-03-16 11:30:18 本科       27500 高        8 27492
+## 2 2020-03-16 10:58:48 本科       30000 高        9 29991
+## 3 2020-03-16 10:46:39 不限       27500 高        7 27493
+## 4 2020-03-16 10:45:44 本科       16500 中        8 16492
+## 5 2020-03-16 10:20:41 本科       15000 中       10 14990
+## 6 2020-03-16 10:33:48 本科       14000 中        5 13995
+## # … with 129 more rows</code></pre>
+</div>
+<div id="题目47数据汇总计算salary列大于10000的次数" class="section level3">
+<h3>题目47（数据汇总）：计算salary列大于10000的次数</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  summarise(n = sum(salary &gt; 10000))</code></pre>
+<pre><code>## # A tibble: 1 × 1
+##       n
+##   &lt;int&gt;
+## 1   119</code></pre>
+<p>或者用</p>
+<pre class="r"><code>df %&gt;% 
+  count(salary &gt; 10000)</code></pre>
+<pre><code>## # A tibble: 2 × 2
+##   `salary &gt; 10000`     n
+##   &lt;lgl&gt;            &lt;int&gt;
+## 1 FALSE               16
+## 2 TRUE               119</code></pre>
+</div>
+<div id="题目48统计频数查看每种学历出现的次数" class="section level3">
+<h3>题目48（统计频数）：查看每种学历出现的次数</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code># table(df$education)
+# 或者
+df %&gt;% 
+  count(education)   </code></pre>
+<pre><code>## # A tibble: 4 × 2
+##   education     n
+##   &lt;chr&gt;     &lt;int&gt;
+## 1 不限          5
+## 2 大专          4
+## 3 本科        119
+## 4 硕士          7</code></pre>
+</div>
+<div id="题目49数据汇总查看education列共有几种学历" class="section level3">
+<h3>题目49（数据汇总）：查看education列共有几种学历</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  distinct(education)</code></pre>
+<pre><code>## # A tibble: 4 × 1
+##   education
+##   &lt;chr&gt;    
+## 1 本科     
+## 2 不限     
+## 3 硕士     
+## 4 大专</code></pre>
+</div>
+<div id="题目50筛选行提取salary与new列之和大于60000的最后3行" class="section level3">
+<h3>题目50（筛选行）：提取salary与new列之和大于60000的最后3行</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  filter(salary + new &gt; 60000) %&gt;% 
+  slice_head(n = 3)</code></pre>
+<pre><code>## # A tibble: 3 × 6
+##   createTime          education salary class rnums   new
+##   &lt;dttm&gt;              &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt; &lt;int&gt; &lt;dbl&gt;
+## 1 2020-03-16 10:36:57 本科       37500 高        6 37494
+## 2 2020-03-16 11:01:22 本科       35000 高       10 34990
+## 3 2020-03-16 11:04:00 本科       40000 高        8 39992</code></pre>
+</div>
+</div>
+<div id="part-iii-提高" class="section level2">
+<h2>Part III 提高</h2>
+<div id="题目51读取数据使用绝对路径读取本地excel数据" class="section level3">
+<h3>题目51（读取数据）：使用绝对路径读取本地Excel数据</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df = readxl::read_xls(&quot;datas/51-80数据.xls&quot;)
+df</code></pre>
+<pre><code>## # A tibble: 327 × 18
+##   代码      简称    日期                `前收盘价(元)` `开盘价(元)` `最高价(元)`
+##   &lt;chr&gt;     &lt;chr&gt;   &lt;dttm&gt;                       &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;
+## 1 600000.SH 浦发银… 2016-01-04 00:00:00           16.1         16.1         16.1
+## 2 600000.SH 浦发银… 2016-01-05 00:00:00           15.7         15.5         16.0
+## 3 600000.SH 浦发银… 2016-01-06 00:00:00           15.9         15.8         16.0
+## 4 600000.SH 浦发银… 2016-01-07 00:00:00           16.0         15.7         15.8
+## 5 600000.SH 浦发银… 2016-01-08 00:00:00           15.5         15.7         15.8
+## 6 600000.SH 浦发银… 2016-01-11 00:00:00           15.4         15.2         15.4
+## # … with 321 more rows, and 12 more variables: `最低价(元)` &lt;dbl&gt;,
+## #   `收盘价(元)` &lt;dbl&gt;, `成交量(股)` &lt;chr&gt;, `成交金额(元)` &lt;chr&gt;,
+## #   `涨跌(元)` &lt;dbl&gt;, `涨跌幅(%)` &lt;dbl&gt;, `均价(元)` &lt;chr&gt;, `换手率(%)` &lt;chr&gt;,
+## #   `A股流通市值(元)` &lt;dbl&gt;, `总市值(元)` &lt;dbl&gt;, `A股流通股本(股)` &lt;dbl&gt;,
+## #   市盈率 &lt;dbl&gt;</code></pre>
+</div>
+<div id="题目52查看数据查看数据框的前3行" class="section level3">
+<h3>题目52（查看数据）：查看数据框的前3行</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>head(df, 3)   </code></pre>
+<pre><code>## # A tibble: 3 × 18
+##   代码      简称    日期                `前收盘价(元)` `开盘价(元)` `最高价(元)`
+##   &lt;chr&gt;     &lt;chr&gt;   &lt;dttm&gt;                       &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;
+## 1 600000.SH 浦发银… 2016-01-04 00:00:00           16.1         16.1         16.1
+## 2 600000.SH 浦发银… 2016-01-05 00:00:00           15.7         15.5         16.0
+## 3 600000.SH 浦发银… 2016-01-06 00:00:00           15.9         15.8         16.0
+## # … with 12 more variables: `最低价(元)` &lt;dbl&gt;, `收盘价(元)` &lt;dbl&gt;,
+## #   `成交量(股)` &lt;chr&gt;, `成交金额(元)` &lt;chr&gt;, `涨跌(元)` &lt;dbl&gt;,
+## #   `涨跌幅(%)` &lt;dbl&gt;, `均价(元)` &lt;chr&gt;, `换手率(%)` &lt;chr&gt;,
+## #   `A股流通市值(元)` &lt;dbl&gt;, `总市值(元)` &lt;dbl&gt;, `A股流通股本(股)` &lt;dbl&gt;,
+## #   市盈率 &lt;dbl&gt;</code></pre>
+<pre class="r"><code># 或者
+# df %&gt;% 
+#  slice_head(n = 3) </code></pre>
+</div>
+<div id="题目53查看缺失值查看每列数据缺失值情况" class="section level3">
+<h3>题目53（查看缺失值）：查看每列数据缺失值情况</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>library(naniar)
+  
+df %&gt;% 
+  miss_var_summary()</code></pre>
+<pre><code>## # A tibble: 18 × 3
+##   variable     n_miss pct_miss
+##   &lt;chr&gt;         &lt;int&gt;    &lt;dbl&gt;
+## 1 代码              0        0
+## 2 简称              0        0
+## 3 日期              0        0
+## 4 前收盘价(元)      0        0
+## 5 开盘价(元)        0        0
+## 6 最高价(元)        0        0
+## # … with 12 more rows</code></pre>
+</div>
+<div id="题目54查看缺失值查看日期列含有缺失值的行" class="section level3">
+<h3>题目54（查看缺失值）：查看日期列含有缺失值的行</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  filter(is.na(日期))</code></pre>
+<pre><code>## # A tibble: 0 × 18
+## # … with 18 variables: 代码 &lt;chr&gt;, 简称 &lt;chr&gt;, 日期 &lt;dttm&gt;, 前收盘价(元) &lt;dbl&gt;,
+## #   开盘价(元) &lt;dbl&gt;, 最高价(元) &lt;dbl&gt;, 最低价(元) &lt;dbl&gt;, 收盘价(元) &lt;dbl&gt;,
+## #   成交量(股) &lt;chr&gt;, 成交金额(元) &lt;chr&gt;, 涨跌(元) &lt;dbl&gt;, 涨跌幅(%) &lt;dbl&gt;,
+## #   均价(元) &lt;chr&gt;, 换手率(%) &lt;chr&gt;, A股流通市值(元) &lt;dbl&gt;, 总市值(元) &lt;dbl&gt;,
+## #   A股流通股本(股) &lt;dbl&gt;, 市盈率 &lt;dbl&gt;</code></pre>
+<pre class="r"><code>which(is.na(df$日期))   # 日期列缺失的行号</code></pre>
+<pre><code>## integer(0)</code></pre>
+</div>
+<div id="题目55查看缺失值查看每列缺失值在哪些行" class="section level3">
+<h3>题目55（查看缺失值）：查看每列缺失值在哪些行</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>naIdx = df %&gt;%
+  where_na()         # 返回NA的行列索引, 需要naniar包
+  
+split(naIdx[,1], naIdx[,2])</code></pre>
+<pre><code>## named list()</code></pre>
+</div>
+<div id="题目56缺失值处理删除所有存在缺失值的行" class="section level3">
+<h3>题目56（缺失值处理）：删除所有存在缺失值的行</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  drop_na()</code></pre>
+<pre><code>## # A tibble: 327 × 18
+##   代码      简称    日期                `前收盘价(元)` `开盘价(元)` `最高价(元)`
+##   &lt;chr&gt;     &lt;chr&gt;   &lt;dttm&gt;                       &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;
+## 1 600000.SH 浦发银… 2016-01-04 00:00:00           16.1         16.1         16.1
+## 2 600000.SH 浦发银… 2016-01-05 00:00:00           15.7         15.5         16.0
+## 3 600000.SH 浦发银… 2016-01-06 00:00:00           15.9         15.8         16.0
+## 4 600000.SH 浦发银… 2016-01-07 00:00:00           16.0         15.7         15.8
+## 5 600000.SH 浦发银… 2016-01-08 00:00:00           15.5         15.7         15.8
+## 6 600000.SH 浦发银… 2016-01-11 00:00:00           15.4         15.2         15.4
+## # … with 321 more rows, and 12 more variables: `最低价(元)` &lt;dbl&gt;,
+## #   `收盘价(元)` &lt;dbl&gt;, `成交量(股)` &lt;chr&gt;, `成交金额(元)` &lt;chr&gt;,
+## #   `涨跌(元)` &lt;dbl&gt;, `涨跌幅(%)` &lt;dbl&gt;, `均价(元)` &lt;chr&gt;, `换手率(%)` &lt;chr&gt;,
+## #   `A股流通市值(元)` &lt;dbl&gt;, `总市值(元)` &lt;dbl&gt;, `A股流通股本(股)` &lt;dbl&gt;,
+## #   市盈率 &lt;dbl&gt;</code></pre>
+<p><strong>注：</strong> 若要删除某些列包含缺失值的行，提供列名即可。</p>
+</div>
+<div id="题目57数据可视化绘制收盘价的折线图" class="section level3">
+<h3>题目57（数据可视化）：绘制收盘价的折线图</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+    ggplot(aes(日期, `收盘价(元)`)) +
+    geom_line()</code></pre>
+<p><img src="/projects/2022-05-05-120/r_tidyverse_120_files/figure-html/unnamed-chunk-65-1.png" width="672" /></p>
+</div>
+<div id="题目58数据可视化同时绘制开盘价与收盘价" class="section level3">
+<h3>题目58（数据可视化）：同时绘制开盘价与收盘价</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;%
+  select(日期, `开盘价(元)`, `收盘价(元)`) %&gt;% 
+  pivot_longer(-日期, 
+               names_to = &quot;type&quot;,
+               values_to = &quot;price&quot;) %&gt;%
+  ggplot(aes(日期, price, color = type)) +
+  geom_line() </code></pre>
+<p><img src="/projects/2022-05-05-120/r_tidyverse_120_files/figure-html/unnamed-chunk-66-1.png" width="672" /></p>
+<p><strong>注：</strong> 为了自动添加图例，先对数据做了宽变长转换。</p>
+</div>
+<div id="题目59数据可视化绘制涨跌幅的直方图" class="section level3">
+<h3>题目59（数据可视化）：绘制涨跌幅的直方图</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  ggplot(aes(`涨跌幅(%)`)) +
+  geom_histogram()</code></pre>
+<p><img src="/projects/2022-05-05-120/r_tidyverse_120_files/figure-html/unnamed-chunk-67-1.png" width="672" /></p>
+</div>
+<div id="题目60数据可视化让直方图更细致" class="section level3">
+<h3>题目60（数据可视化）：让直方图更细致</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  ggplot(aes(`涨跌幅(%)`)) +
+  geom_histogram(bins = 40)</code></pre>
+<p><img src="/projects/2022-05-05-120/r_tidyverse_120_files/figure-html/unnamed-chunk-68-1.png" width="672" /></p>
+</div>
+<div id="题目61数据创建用df的列名创建数据框" class="section level3">
+<h3>题目61（数据创建）：用df的列名创建数据框</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>names(df) %&gt;% 
+  as_tibble()</code></pre>
+<pre><code>## # A tibble: 18 × 1
+##   value       
+##   &lt;chr&gt;       
+## 1 代码        
+## 2 简称        
+## 3 日期        
+## 4 前收盘价(元)
+## 5 开盘价(元)  
+## 6 最高价(元)  
+## # … with 12 more rows</code></pre>
+</div>
+<div id="题目62异常值处理输出所有换手率不是数字的行" class="section level3">
+<h3>题目62（异常值处理）：输出所有换手率不是数字的行</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  mutate(`换手率(%)` = parse_number(`换手率(%)`)) %&gt;% 
+  filter(is.na(`换手率(%)`))</code></pre>
+<pre><code>## # A tibble: 18 × 18
+##   代码      简称    日期                `前收盘价(元)` `开盘价(元)` `最高价(元)`
+##   &lt;chr&gt;     &lt;chr&gt;   &lt;dttm&gt;                       &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;
+## 1 600000.SH 浦发银… 2016-02-16 00:00:00           16.3         16.3         16.3
+## 2 600000.SH 浦发银… 2016-02-17 00:00:00           16.3         16.3         16.3
+## 3 600000.SH 浦发银… 2016-02-18 00:00:00           16.3         16.3         16.3
+## 4 600000.SH 浦发银… 2016-02-19 00:00:00           16.3         16.3         16.3
+## 5 600000.SH 浦发银… 2016-02-22 00:00:00           16.3         16.3         16.3
+## 6 600000.SH 浦发银… 2016-02-23 00:00:00           16.3         16.3         16.3
+## # … with 12 more rows, and 12 more variables: `最低价(元)` &lt;dbl&gt;,
+## #   `收盘价(元)` &lt;dbl&gt;, `成交量(股)` &lt;chr&gt;, `成交金额(元)` &lt;chr&gt;,
+## #   `涨跌(元)` &lt;dbl&gt;, `涨跌幅(%)` &lt;dbl&gt;, `均价(元)` &lt;chr&gt;, `换手率(%)` &lt;dbl&gt;,
+## #   `A股流通市值(元)` &lt;dbl&gt;, `总市值(元)` &lt;dbl&gt;, `A股流通股本(股)` &lt;dbl&gt;,
+## #   市盈率 &lt;dbl&gt;</code></pre>
+</div>
+<div id="题目63异常值处理输出所有换手率为的行" class="section level3">
+<h3>题目63（异常值处理）：输出所有换手率为–的行</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  filter(`换手率(%)` == &quot;--&quot;)</code></pre>
+<pre><code>## # A tibble: 18 × 18
+##   代码      简称    日期                `前收盘价(元)` `开盘价(元)` `最高价(元)`
+##   &lt;chr&gt;     &lt;chr&gt;   &lt;dttm&gt;                       &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;
+## 1 600000.SH 浦发银… 2016-02-16 00:00:00           16.3         16.3         16.3
+## 2 600000.SH 浦发银… 2016-02-17 00:00:00           16.3         16.3         16.3
+## 3 600000.SH 浦发银… 2016-02-18 00:00:00           16.3         16.3         16.3
+## 4 600000.SH 浦发银… 2016-02-19 00:00:00           16.3         16.3         16.3
+## 5 600000.SH 浦发银… 2016-02-22 00:00:00           16.3         16.3         16.3
+## 6 600000.SH 浦发银… 2016-02-23 00:00:00           16.3         16.3         16.3
+## # … with 12 more rows, and 12 more variables: `最低价(元)` &lt;dbl&gt;,
+## #   `收盘价(元)` &lt;dbl&gt;, `成交量(股)` &lt;chr&gt;, `成交金额(元)` &lt;chr&gt;,
+## #   `涨跌(元)` &lt;dbl&gt;, `涨跌幅(%)` &lt;dbl&gt;, `均价(元)` &lt;chr&gt;, `换手率(%)` &lt;chr&gt;,
+## #   `A股流通市值(元)` &lt;dbl&gt;, `总市值(元)` &lt;dbl&gt;, `A股流通股本(股)` &lt;dbl&gt;,
+## #   市盈率 &lt;dbl&gt;</code></pre>
+</div>
+<div id="题目64数据操作重置df的行号" class="section level3">
+<h3>题目64（数据操作）：重置df的行号</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>rownames(df) = NULL    # R中无行号就是数字索引</code></pre>
+</div>
+<div id="题目65异常值处理删除所有换手率为非数字的行" class="section level3">
+<h3>题目65（异常值处理）：删除所有换手率为非数字的行</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  mutate(`换手率(%)` = parse_number(`换手率(%)`)) %&gt;% 
+  filter(!is.na(`换手率(%)`))</code></pre>
+<pre><code>## # A tibble: 309 × 18
+##   代码      简称    日期                `前收盘价(元)` `开盘价(元)` `最高价(元)`
+##   &lt;chr&gt;     &lt;chr&gt;   &lt;dttm&gt;                       &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;
+## 1 600000.SH 浦发银… 2016-01-04 00:00:00           16.1         16.1         16.1
+## 2 600000.SH 浦发银… 2016-01-05 00:00:00           15.7         15.5         16.0
+## 3 600000.SH 浦发银… 2016-01-06 00:00:00           15.9         15.8         16.0
+## 4 600000.SH 浦发银… 2016-01-07 00:00:00           16.0         15.7         15.8
+## 5 600000.SH 浦发银… 2016-01-08 00:00:00           15.5         15.7         15.8
+## 6 600000.SH 浦发银… 2016-01-11 00:00:00           15.4         15.2         15.4
+## # … with 303 more rows, and 12 more variables: `最低价(元)` &lt;dbl&gt;,
+## #   `收盘价(元)` &lt;dbl&gt;, `成交量(股)` &lt;chr&gt;, `成交金额(元)` &lt;chr&gt;,
+## #   `涨跌(元)` &lt;dbl&gt;, `涨跌幅(%)` &lt;dbl&gt;, `均价(元)` &lt;chr&gt;, `换手率(%)` &lt;dbl&gt;,
+## #   `A股流通市值(元)` &lt;dbl&gt;, `总市值(元)` &lt;dbl&gt;, `A股流通股本(股)` &lt;dbl&gt;,
+## #   市盈率 &lt;dbl&gt;</code></pre>
+<p>补充：为了便于后续处理，做数值型转化, 并转化为tsibble对象</p>
+<pre class="r"><code>library(tsibble)
+
+df = df %&gt;% 
+  mutate_at(vars(4:18), as.numeric) %&gt;% 
+  mutate(日期 = lubridate::as_date(日期)) %&gt;%
+  as_tsibble(index = 日期, key = c(代码, 简称))
+df</code></pre>
+<pre><code>## # A tsibble: 327 x 18 [1D]
+## # Key:       代码, 简称 [1]
+##   代码    简称  日期       `前收盘价(元)` `开盘价(元)` `最高价(元)` `最低价(元)`
+##   &lt;chr&gt;   &lt;chr&gt; &lt;date&gt;              &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;
+## 1 600000… 浦发… 2016-01-04           16.1         16.1         16.1         15.5
+## 2 600000… 浦发… 2016-01-05           15.7         15.5         16.0         15.4
+## 3 600000… 浦发… 2016-01-06           15.9         15.8         16.0         15.6
+## 4 600000… 浦发… 2016-01-07           16.0         15.7         15.8         15.4
+## 5 600000… 浦发… 2016-01-08           15.5         15.7         15.8         14.9
+## 6 600000… 浦发… 2016-01-11           15.4         15.2         15.4         15.0
+## # … with 321 more rows, and 11 more variables: `收盘价(元)` &lt;dbl&gt;,
+## #   `成交量(股)` &lt;dbl&gt;, `成交金额(元)` &lt;dbl&gt;, `涨跌(元)` &lt;dbl&gt;,
+## #   `涨跌幅(%)` &lt;dbl&gt;, `均价(元)` &lt;dbl&gt;, `换手率(%)` &lt;dbl&gt;,
+## #   `A股流通市值(元)` &lt;dbl&gt;, `总市值(元)` &lt;dbl&gt;, `A股流通股本(股)` &lt;dbl&gt;,
+## #   市盈率 &lt;dbl&gt;</code></pre>
+</div>
+<div id="题目66数据可视化绘制换手率的密度曲线" class="section level3">
+<h3>题目66（数据可视化）：绘制换手率的密度曲线</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;%
+  ggplot(aes(`换手率(%)`)) +
+  geom_density()</code></pre>
+<p><img src="/projects/2022-05-05-120/r_tidyverse_120_files/figure-html/unnamed-chunk-75-1.png" width="672" /></p>
+</div>
+<div id="题目67数据计算计算前一天与后一天收盘价的差值" class="section level3">
+<h3>题目67（数据计算）：计算前一天与后一天收盘价的差值</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  mutate(delta = `收盘价(元)` - lag(`收盘价(元)`)) %&gt;% 
+  select(日期, `收盘价(元)`, delta)</code></pre>
+<pre><code>## # A tsibble: 327 x 3 [1D]
+##   日期       `收盘价(元)`   delta
+##   &lt;date&gt;            &lt;dbl&gt;   &lt;dbl&gt;
+## 1 2016-01-04         15.7 NA     
+## 2 2016-01-05         15.9  0.141 
+## 3 2016-01-06         16.0  0.124 
+## 4 2016-01-07         15.5 -0.521 
+## 5 2016-01-08         15.4 -0.0177
+## 6 2016-01-11         15.1 -0.389 
+## # … with 321 more rows</code></pre>
+</div>
+<div id="题目68数据计算计算前一天与后一天收盘价的变化率" class="section level3">
+<h3>题目68（数据计算）：计算前一天与后一天收盘价的变化率</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  mutate(change = (`收盘价(元)` - lag(`收盘价(元)`)) / `收盘价(元)`) %&gt;% 
+  select(日期, `收盘价(元)`, change)</code></pre>
+<pre><code>## # A tsibble: 327 x 3 [1D]
+##   日期       `收盘价(元)`   change
+##   &lt;date&gt;            &lt;dbl&gt;    &lt;dbl&gt;
+## 1 2016-01-04         15.7 NA      
+## 2 2016-01-05         15.9  0.00891
+## 3 2016-01-06         16.0  0.00774
+## 4 2016-01-07         15.5 -0.0337 
+## 5 2016-01-08         15.4 -0.00115
+## 6 2016-01-11         15.1 -0.0258 
+## # … with 321 more rows</code></pre>
+</div>
+<div id="题目69数据操作设置日期为行索引" class="section level3">
+<h3>题目69（数据操作）：设置日期为行索引</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  column_to_rownames(&quot;日期&quot;) %&gt;% 
+  head()</code></pre>
+<pre><code>##                 代码     简称 前收盘价(元) 开盘价(元) 最高价(元) 最低价(元)
+## 2016-01-04 600000.SH 浦发银行      16.1356    16.1444    16.1444    15.4997
+## 2016-01-05 600000.SH 浦发银行      15.7205    15.4644    15.9501    15.3672
+## 2016-01-06 600000.SH 浦发银行      15.8618    15.8088    16.0208    15.6234
+## 2016-01-07 600000.SH 浦发银行      15.9855    15.7205    15.8088    15.3672
+## 2016-01-08 600000.SH 浦发银行      15.4644    15.6675    15.7912    14.9345
+## 2016-01-11 600000.SH 浦发银行      15.4467    15.1994    15.4114    14.9786
+##            收盘价(元) 成交量(股) 成交金额(元) 涨跌(元) 涨跌幅(%) 均价(元)
+## 2016-01-04    15.7205   42240610    754425783  -0.4151   -2.5725  17.8602
+## 2016-01-05    15.8618   58054793   1034181474   0.1413    0.8989  17.8139
+## 2016-01-06    15.9855   46772653    838667398   0.1236    0.7795  17.9307
+## 2016-01-07    15.4644   11350479    199502702  -0.5211   -3.2597  17.5766
+## 2016-01-08    15.4467   71918296   1262105060  -0.0177   -0.1142  17.5492
+## 2016-01-11    15.0581   90177135   1550155933  -0.3886   -2.5157  17.1901
+##            换手率(%) A股流通市值(元)   总市值(元) A股流通股本(股) 市盈率
+## 2016-01-04    0.2264    332031791187 332031791187     18653471415 6.5614
+## 2016-01-05    0.3112    335016346613 335016346613     18653471415 6.6204
+## 2016-01-06    0.2507    337627832612 337627832612     18653471415 6.6720
+## 2016-01-07    0.0608    326622284477 326622284477     18653471415 6.4545
+## 2016-01-08    0.3855    326249215048 326249215048     18653471415 6.4471
+## 2016-01-11    0.4834    318041687626 318041687626     18653471415 6.2849</code></pre>
+</div>
+<div id="题目70数据计算对收盘价做步长为5的滑动平均" class="section level3">
+<h3>题目70（数据计算）：对收盘价做步长为5的滑动平均</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>library(slider)
+
+df %&gt;%
+  mutate(avg_5 = slide_dbl(`收盘价(元)`, mean, na.rm = TRUE, .before = 2, .after = 2)) %&gt;% 
+  select(日期, `收盘价(元)`, avg_5)</code></pre>
+<pre><code>## # A tsibble: 327 x 3 [1D]
+##   日期       `收盘价(元)` avg_5
+##   &lt;date&gt;            &lt;dbl&gt; &lt;dbl&gt;
+## 1 2016-01-04         15.7  15.9
+## 2 2016-01-05         15.9  15.8
+## 3 2016-01-06         16.0  15.7
+## 4 2016-01-07         15.5  15.6
+## 5 2016-01-08         15.4  15.5
+## 6 2016-01-11         15.1  15.3
+## # … with 321 more rows</code></pre>
+</div>
+<div id="题目71数据计算对收盘价做步长为5的滑动求和" class="section level3">
+<h3>题目71（数据计算）：对收盘价做步长为5的滑动求和</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;%
+  mutate(sum_5 = slide_dbl(`收盘价(元)`, sum, na.rm = TRUE, .before = 2, .after = 2)) %&gt;% 
+  select(日期, `收盘价(元)`, sum_5)</code></pre>
+<pre><code>## # A tsibble: 327 x 3 [1D]
+##   日期       `收盘价(元)` sum_5
+##   &lt;date&gt;            &lt;dbl&gt; &lt;dbl&gt;
+## 1 2016-01-04         15.7  47.6
+## 2 2016-01-05         15.9  63.0
+## 3 2016-01-06         16.0  78.5
+## 4 2016-01-07         15.5  77.8
+## 5 2016-01-08         15.4  77.4
+## 6 2016-01-11         15.1  76.7
+## # … with 321 more rows</code></pre>
+</div>
+<div id="题目72数据可视化将收盘价及其5日均线20日均线绘制在同一个图上" class="section level3">
+<h3>题目72（数据可视化）：将收盘价及其5日均线、20日均线绘制在同一个图上</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;%
+  mutate(avg_5 = slide_dbl(`收盘价(元)`, mean, na.rm = TRUE, .before = 2, .after = 2),
+  avg_20 = slide_dbl(`收盘价(元)`, mean, na.rm = TRUE, .before = 10, .after = 9)) %&gt;% 
+  pivot_longer(c(`收盘价(元)`, avg_5, avg_20),
+                  names_to = &quot;type&quot;,
+                  values_to = &quot;price&quot;) %&gt;% 
+  ggplot(aes(日期, price, color = type)) +
+    geom_line()</code></pre>
+<p><img src="/projects/2022-05-05-120/r_tidyverse_120_files/figure-html/unnamed-chunk-81-1.png" width="672" /></p>
+</div>
+<div id="题目73数据重采样按周为采样规则计算一周收盘价最大值" class="section level3">
+<h3>题目73（数据重采样）：按周为采样规则，计算一周收盘价最大值</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>weekmax = df %&gt;% 
+  index_by(weeks = ~ yearweek(.)) %&gt;%    #周度汇总
+  summarise(max_week = max(`收盘价(元)`, na.rm = TRUE))
+weekmax</code></pre>
+<pre><code>## # A tsibble: 69 x 2 [1W]
+##      weeks max_week
+##     &lt;week&gt;    &lt;dbl&gt;
+## 1 2016 W01     16.0
+## 2 2016 W02     15.8
+## 3 2016 W03     15.7
+## 4 2016 W04     15.0
+## 5 2016 W05     16.2
+## 6 2016 W07     16.3
+## # … with 63 more rows</code></pre>
+</div>
+<div id="题目74数据可视化绘制重采样数据与原始数据" class="section level3">
+<h3>题目74（数据可视化）：绘制重采样数据与原始数据</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>ggplot() +
+  geom_line(data = weekmax, mapping = aes(weeks, max_week), color = &quot;red&quot;) +
+  geom_line(data = df, aes(日期, `收盘价(元)`), color = &quot;steelblue&quot;)</code></pre>
+<p><img src="/projects/2022-05-05-120/r_tidyverse_120_files/figure-html/unnamed-chunk-83-1.png" width="672" /></p>
+</div>
+<div id="题目75数据操作将数据往后移动5天" class="section level3">
+<h3>题目75（数据操作）：将数据往后移动5天</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  mutate(across(4:18, ~ lag(.x, 5)))</code></pre>
+<pre><code>## # A tsibble: 327 x 18 [1D]
+## # Key:       代码, 简称 [1]
+##   代码    简称  日期       `前收盘价(元)` `开盘价(元)` `最高价(元)` `最低价(元)`
+##   &lt;chr&gt;   &lt;chr&gt; &lt;date&gt;              &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;
+## 1 600000… 浦发… 2016-01-04           NA           NA           NA           NA  
+## 2 600000… 浦发… 2016-01-05           NA           NA           NA           NA  
+## 3 600000… 浦发… 2016-01-06           NA           NA           NA           NA  
+## 4 600000… 浦发… 2016-01-07           NA           NA           NA           NA  
+## 5 600000… 浦发… 2016-01-08           NA           NA           NA           NA  
+## 6 600000… 浦发… 2016-01-11           16.1         16.1         16.1         15.5
+## # … with 321 more rows, and 11 more variables: `收盘价(元)` &lt;dbl&gt;,
+## #   `成交量(股)` &lt;dbl&gt;, `成交金额(元)` &lt;dbl&gt;, `涨跌(元)` &lt;dbl&gt;,
+## #   `涨跌幅(%)` &lt;dbl&gt;, `均价(元)` &lt;dbl&gt;, `换手率(%)` &lt;dbl&gt;,
+## #   `A股流通市值(元)` &lt;dbl&gt;, `总市值(元)` &lt;dbl&gt;, `A股流通股本(股)` &lt;dbl&gt;,
+## #   市盈率 &lt;dbl&gt;</code></pre>
+<p><strong>注：</strong>这是批量做后移，单个变量做后移用<code>mutate(var = lag(var, 5)</code>即可。</p>
+</div>
+<div id="题目76数据操作将数据往前移动5天" class="section level3">
+<h3>题目76（数据操作）：将数据往前移动5天</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  mutate(across(4:18, ~ lead(.x, 5)))</code></pre>
+<pre><code>## # A tsibble: 327 x 18 [1D]
+## # Key:       代码, 简称 [1]
+##   代码    简称  日期       `前收盘价(元)` `开盘价(元)` `最高价(元)` `最低价(元)`
+##   &lt;chr&gt;   &lt;chr&gt; &lt;date&gt;              &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;
+## 1 600000… 浦发… 2016-01-04           15.4         15.2         15.4         15.0
+## 2 600000… 浦发… 2016-01-05           15.1         15.2         15.5         15.1
+## 3 600000… 浦发… 2016-01-06           15.4         15.5         15.8         15.3
+## 4 600000… 浦发… 2016-01-07           15.4         15.0         15.9         14.9
+## 5 600000… 浦发… 2016-01-08           15.8         15.7         16.0         15.5
+## 6 600000… 浦发… 2016-01-11           15.5         15.4         15.9         15.3
+## # … with 321 more rows, and 11 more variables: `收盘价(元)` &lt;dbl&gt;,
+## #   `成交量(股)` &lt;dbl&gt;, `成交金额(元)` &lt;dbl&gt;, `涨跌(元)` &lt;dbl&gt;,
+## #   `涨跌幅(%)` &lt;dbl&gt;, `均价(元)` &lt;dbl&gt;, `换手率(%)` &lt;dbl&gt;,
+## #   `A股流通市值(元)` &lt;dbl&gt;, `总市值(元)` &lt;dbl&gt;, `A股流通股本(股)` &lt;dbl&gt;,
+## #   市盈率 &lt;dbl&gt;</code></pre>
+</div>
+<div id="题目77数据操作计算开盘价的累积平均" class="section level3">
+<h3>题目77（数据操作）：计算开盘价的累积平均</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>rlt = df %&gt;% 
+  mutate(累积平均 = cummean(`开盘价(元)`)) %&gt;% 
+  select(日期, `开盘价(元)`, 累积平均)
+rlt</code></pre>
+<pre><code>## # A tsibble: 327 x 3 [1D]
+##   日期       `开盘价(元)` 累积平均
+##   &lt;date&gt;            &lt;dbl&gt;    &lt;dbl&gt;
+## 1 2016-01-04         16.1     16.1
+## 2 2016-01-05         15.5     15.8
+## 3 2016-01-06         15.8     15.8
+## 4 2016-01-07         15.7     15.8
+## 5 2016-01-08         15.7     15.8
+## 6 2016-01-11         15.2     15.7
+## # … with 321 more rows</code></pre>
+</div>
+<div id="题目78数据计算绘制开盘价的累积平均与原始数据的折线图" class="section level3">
+<h3>题目78（数据计算）：绘制开盘价的累积平均与原始数据的折线图</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>rlt %&gt;% 
+  pivot_longer(-日期, names_to = &quot;type&quot;, values_to = &quot;price&quot;) %&gt;% 
+  ggplot(aes(日期, price, color = type)) +
+    geom_line()</code></pre>
+<p><img src="/projects/2022-05-05-120/r_tidyverse_120_files/figure-html/unnamed-chunk-87-1.png" width="672" /></p>
+</div>
+<div id="题目79数据计算计算布林指标" class="section level3">
+<h3>题目79（数据计算）：计算布林指标</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>boll = df %&gt;%
+  mutate(avg_20 = slide_dbl(`收盘价(元)`, mean, na.rm = TRUE, .before = 10, .after = 9), 
+         sd_20 = slide_dbl(`收盘价(元)`, sd, na.rm = TRUE, .before = 10, .after = 9),
+         up = avg_20 + 2 * sd_20,
+         down = avg_20 - 2 * sd_20) %&gt;% 
+  select(日期, `收盘价(元)`, avg_20, up, down)
+
+boll %&gt;% 
+  sample_n(10)</code></pre>
+<pre><code>## # A tsibble: 10 x 5 [1D]
+##   日期       `收盘价(元)` avg_20    up  down
+##   &lt;date&gt;            &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 2016-05-25         15.6   15.6  16.2  15.0
+## 2 2017-04-28         15.2   15.1  15.5  14.7
+## 3 2017-01-03         16.3   16.2  16.5  16.0
+## 4 2016-11-01         16.3   16.4  16.6  16.1
+## 5 2016-07-22         15.6   15.7  15.9  15.5
+## 6 2016-05-23         15.5   15.6  16.1  15.0
+## # … with 4 more rows</code></pre>
+</div>
+<div id="题目80数据可视化绘制布林曲线" class="section level3">
+<h3>题目80（数据可视化）：绘制布林曲线</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>boll %&gt;% 
+  pivot_longer(-日期, names_to = &quot;type&quot;, values_to = &quot;price&quot;) %&gt;% 
+  ggplot(aes(日期, price, color = type)) + 
+    geom_line()</code></pre>
+<p><img src="/projects/2022-05-05-120/r_tidyverse_120_files/figure-html/unnamed-chunk-89-1.png" width="672" /></p>
+</div>
+</div>
+<div id="part-vi-数据生成" class="section level2">
+<h2>Part VI 数据生成</h2>
+<div id="题目81加载查看包加载并查看tidyverse包版本" class="section level3">
+<h3>题目81（加载查看包）：加载并查看tidyverse包版本</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+</div>
+<div id="题目82生成随机数生成20个0100的随机数创建数据框" class="section level3">
+<h3>题目82（生成随机数）：生成20个0~100的随机数，创建数据框</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>set.seed(123)      # 保证结果出现
+df1 = tibble(nums = sample.int(100, 20))
+df1</code></pre>
+<pre><code>## # A tibble: 20 × 1
+##    nums
+##   &lt;int&gt;
+## 1    31
+## 2    79
+## 3    51
+## 4    14
+## 5    67
+## 6    42
+## # … with 14 more rows</code></pre>
+</div>
+<div id="题目83生成等差数生成20个0100固定步长的数创建数据框" class="section level3">
+<h3>题目83（生成等差数）：生成20个0~100固定步长的数，创建数据框</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df2 = tibble(nums = seq(0, 99, by = 5))
+df2</code></pre>
+<pre><code>## # A tibble: 20 × 1
+##    nums
+##   &lt;dbl&gt;
+## 1     0
+## 2     5
+## 3    10
+## 4    15
+## 5    20
+## 6    25
+## # … with 14 more rows</code></pre>
+</div>
+<div id="题目84生成指定分布随机数生成20个标准正态分布的随机数创建数据框" class="section level3">
+<h3>题目84（生成指定分布随机数）：生成20个标准正态分布的随机数，创建数据框</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df3 = tibble(nums = rnorm(20, 0, 1))
+df3</code></pre>
+<pre><code>## # A tibble: 20 × 1
+##     nums
+##    &lt;dbl&gt;
+## 1 -1.97 
+## 2  0.701
+## 3 -0.473
+## 4 -1.07 
+## 5 -0.218
+## 6 -1.03 
+## # … with 14 more rows</code></pre>
+</div>
+<div id="题目85合并数据将df1-df2-df3按行合并为新数据框" class="section level3">
+<h3>题目85（合并数据）：将df1, df2, df3按行合并为新数据框</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>bind_rows(df1, df2, df3)</code></pre>
+<pre><code>## # A tibble: 60 × 1
+##    nums
+##   &lt;dbl&gt;
+## 1    31
+## 2    79
+## 3    51
+## 4    14
+## 5    67
+## 6    42
+## # … with 54 more rows</code></pre>
+</div>
+<div id="题目86合并数据将df1-df2-df3按列合并为新数据框" class="section level3">
+<h3>题目86（合并数据）：将df1, df2, df3按列合并为新数据框</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df = bind_cols(df1, df2, df3)
+df</code></pre>
+<pre><code>## # A tibble: 20 × 3
+##   nums...1 nums...2 nums...3
+##      &lt;int&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1       31        0   -1.97 
+## 2       79        5    0.701
+## 3       51       10   -0.473
+## 4       14       15   -1.07 
+## 5       67       20   -0.218
+## 6       42       25   -1.03 
+## # … with 14 more rows</code></pre>
+</div>
+<div id="题目87查看数据查看df所有数据的最小值25分位数中位数75分位数最大值" class="section level3">
+<h3>题目87（查看数据）：查看df所有数据的最小值、25%分位数、中位数、75%分位数、最大值</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>unlist(df) %&gt;% 
+  summary()</code></pre>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+## -1.9666  0.6982 25.5000 33.2497 61.2500 97.0000</code></pre>
+</div>
+<div id="题目88修改列名修改列名为col1-col2-col3" class="section level3">
+<h3>题目88（修改列名）：修改列名为col1, col2, col3</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df = df %&gt;% 
+  set_names(str_c(&quot;col&quot;, 1:3))
+df</code></pre>
+<pre><code>## # A tibble: 20 × 3
+##    col1  col2   col3
+##   &lt;int&gt; &lt;dbl&gt;  &lt;dbl&gt;
+## 1    31     0 -1.97 
+## 2    79     5  0.701
+## 3    51    10 -0.473
+## 4    14    15 -1.07 
+## 5    67    20 -0.218
+## 6    42    25 -1.03 
+## # … with 14 more rows</code></pre>
+<p><strong>注：</strong>若只修改个别列名，用<code>rename(newname=oldname)</code>.</p>
+</div>
+<div id="题目89数据操作提取在第1列中而不在第2列中的数" class="section level3">
+<h3>题目89（数据操作）：提取在第1列中而不在第2列中的数</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>setdiff(df$col1, df$col2)</code></pre>
+<pre><code>##  [1] 31 79 51 14 67 42 43 97 69 57  9 72 26  7 87 36</code></pre>
+</div>
+<div id="题目90数据操作提取在第1列和第2列出现频率最高的三个数字" class="section level3">
+<h3>题目90（数据操作）：提取在第1列和第2列出现频率最高的三个数字</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  pivot_longer(1:2,
+               names_to = &quot;col&quot;,
+               values_to = &quot;value&quot;) %&gt;% 
+  count(value, sort = TRUE) %&gt;% 
+  slice_max(n, n = 3)</code></pre>
+<pre><code>## # A tibble: 4 × 2
+##   value     n
+##   &lt;dbl&gt; &lt;int&gt;
+## 1    25     2
+## 2    50     2
+## 3    90     2
+## 4    95     2</code></pre>
+<p>或者用</p>
+<pre class="r"><code>c(df$col1, df$col2) %&gt;% 
+  table() %&gt;% 
+  sort(decreasing = TRUE) %&gt;% 
+  .[1:3]</code></pre>
+<pre><code>## .
+## 25 50 90 
+##  2  2  2</code></pre>
+<p>或者用</p>
+<pre class="r"><code>rlt = tibble(nums = c(df$col1, df$col2)) %&gt;%
+  sjmisc::frq(nums, sort.frq = &quot;desc&quot;) 
+
+rlt[[1]][1:3,]</code></pre>
+<pre><code>##   val  label frq raw.prc valid.prc cum.prc
+## 1  25 &lt;none&gt;   2       5         5       5
+## 2  50 &lt;none&gt;   2       5         5      10
+## 3  90 &lt;none&gt;   2       5         5      15</code></pre>
+</div>
+<div id="题目91数据操作提取第1列可以整除5的数的位置" class="section level3">
+<h3>题目91（数据操作）：提取第1列可以整除5的数的位置</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code># which(df$col1 %% 5 == 0)  
+# 或者
+df %&gt;% 
+  mutate(id = row_number()) %&gt;% 
+  filter(col1 %% 5 == 0) %&gt;% 
+  pull(id)</code></pre>
+<pre><code>## [1]  7 10 11 18</code></pre>
+<ul>
+<li>选取满足条件的索引，通常用途还是用来选出满足条件的行，不兜圈子做法：</li>
+</ul>
+<pre class="r"><code>df %&gt;% 
+  filter(col1 %% 5 == 0)</code></pre>
+<pre><code>## # A tibble: 4 × 3
+##    col1  col2   col3
+##   &lt;int&gt; &lt;dbl&gt;  &lt;dbl&gt;
+## 1    50    30 -0.729
+## 2    25    45  0.838
+## 3    90    50  0.153
+## 4    95    85  0.822</code></pre>
+</div>
+<div id="题目92数据计算计算第1列的1阶差分" class="section level3">
+<h3>题目92（数据计算）：计算第1列的1阶差分</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code># diff(df$col1)  
+# 或者
+df %&gt;% 
+  mutate(diff1 = col1 - lag(col1))</code></pre>
+<pre><code>## # A tibble: 20 × 4
+##    col1  col2   col3 diff1
+##   &lt;int&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;int&gt;
+## 1    31     0 -1.97     NA
+## 2    79     5  0.701    48
+## 3    51    10 -0.473   -28
+## 4    14    15 -1.07    -37
+## 5    67    20 -0.218    53
+## 6    42    25 -1.03    -25
+## # … with 14 more rows</code></pre>
+</div>
+<div id="题目93数据操作将col1-col2-col3三列顺序颠倒" class="section level3">
+<h3>题目93（数据操作）：将col1, col2, col3三列顺序颠倒</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  select(rev(names(df)))</code></pre>
+<pre><code>## # A tibble: 20 × 3
+##     col3  col2  col1
+##    &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt;
+## 1 -1.97      0    31
+## 2  0.701     5    79
+## 3 -0.473    10    51
+## 4 -1.07     15    14
+## 5 -0.218    20    67
+## 6 -1.03     25    42
+## # … with 14 more rows</code></pre>
+<p><strong>注：</strong>更灵活的调整列序，dplyr1.0将提供<code>relocate()</code>函数。</p>
+</div>
+<div id="题目94数据操作提取第一列位置在11015的数" class="section level3">
+<h3>题目94（数据操作）：提取第一列位置在1,10,15的数</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df[c(1,10,15),1]</code></pre>
+<pre><code>## # A tibble: 3 × 1
+##    col1
+##   &lt;int&gt;
+## 1    31
+## 2    25
+## 3    72</code></pre>
+</div>
+<div id="题目95数据操作查找第一列的局部最大值位置" class="section level3">
+<h3>题目95（数据操作）：查找第一列的局部最大值位置</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  mutate(diff = sign(col1 - lag(col1)) + sign(col1 - lead(col1)),
+         id = row_number()) %&gt;% 
+  filter(diff == 2) %&gt;% 
+  pull(id)</code></pre>
+<pre><code>## [1]  2  5  7  9 11 15 18</code></pre>
+<ul>
+<li>不兜圈子做法：</li>
+</ul>
+<pre class="r"><code>df %&gt;% 
+  mutate(diff = sign(col1 - lag(col1)) + sign(col1 - lead(col1))) %&gt;% 
+  filter(diff == 2)</code></pre>
+<pre><code>## # A tibble: 7 × 4
+##    col1  col2   col3  diff
+##   &lt;int&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;
+## 1    79     5  0.701     2
+## 2    67    20 -0.218     2
+## 3    50    30 -0.729     2
+## 4    97    40 -1.69      2
+## 5    90    50  0.153     2
+## 6    72    70 -0.295     2
+## # … with 1 more row</code></pre>
+</div>
+<div id="题目96数据计算按行计算df每一行的均值" class="section level3">
+<h3>题目96（数据计算）：按行计算df每一行的均值</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code># rowMeans(df)    
+# 或者
+# apply(df, 1, mean)
+
+# 或者
+df %&gt;% 
+  mutate(row_avg = (col1 + col2 + col3) / 3)</code></pre>
+<pre><code>## # A tibble: 20 × 4
+##    col1  col2   col3 row_avg
+##   &lt;int&gt; &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;
+## 1    31     0 -1.97     9.68
+## 2    79     5  0.701   28.2 
+## 3    51    10 -0.473   20.2 
+## 4    14    15 -1.07     9.31
+## 5    67    20 -0.218   28.9 
+## 6    42    25 -1.03    22.0 
+## # … with 14 more rows</code></pre>
+<pre class="r"><code># 或者
+# df %&gt;% 
+#  rowwise() %&gt;% 
+#  mutate(row_avg = mean(c_across()))
+
+# 或者
+# df %&gt;% 
+#  mutate(row_avg = pmap_dbl(., ~ mean(c(...))))</code></pre>
+</div>
+<div id="题目97数据计算对第二列计算步长为3的移动平均值" class="section level3">
+<h3>题目97（数据计算）：对第二列计算步长为3的移动平均值</h3>
+<p>*难度：**<span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;%
+  mutate(avg_3 = slide_dbl(col2, mean, .before = 1, .after = 1))</code></pre>
+<pre><code>## # A tibble: 20 × 4
+##    col1  col2   col3 avg_3
+##   &lt;int&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;
+## 1    31     0 -1.97    2.5
+## 2    79     5  0.701   5  
+## 3    51    10 -0.473  10  
+## 4    14    15 -1.07   15  
+## 5    67    20 -0.218  20  
+## 6    42    25 -1.03   25  
+## # … with 14 more rows</code></pre>
+</div>
+<div id="题目98数据计算按第三列值的大小升序排列" class="section level3">
+<h3>题目98（数据计算）：按第三列值的大小升序排列</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  arrange(col3)</code></pre>
+<pre><code>## # A tibble: 20 × 3
+##    col1  col2   col3
+##   &lt;int&gt; &lt;dbl&gt;  &lt;dbl&gt;
+## 1    31     0 -1.97 
+## 2    97    40 -1.69 
+## 3    69    55 -1.14 
+## 4    14    15 -1.07 
+## 5    42    25 -1.03 
+## 6    50    30 -0.729
+## # … with 14 more rows</code></pre>
+</div>
+<div id="题目99数据操作按第一列大于50的数修改为高" class="section level3">
+<h3>题目99（数据操作）：按第一列大于50的数修改为”高”</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code># df[df$col1 &gt; 50, 1] = &quot;高&quot;
+# 或者
+df %&gt;% 
+  mutate(col1 = sjmisc::rec(col1, rec = &quot;50:max=高; else=copy&quot;))</code></pre>
+<pre><code>## # A tibble: 20 × 3
+##   col1   col2   col3
+##   &lt;chr&gt; &lt;dbl&gt;  &lt;dbl&gt;
+## 1 31        0 -1.97 
+## 2 高        5  0.701
+## 3 高       10 -0.473
+## 4 14       15 -1.07 
+## 5 高       20 -0.218
+## 6 42       25 -1.03 
+## # … with 14 more rows</code></pre>
+<p><strong>注：</strong>这里采用更有实用价值的重新编码。</p>
+</div>
+<div id="题目100数据计算计算第一列与第二列的欧氏距离" class="section level3">
+<h3>题目100（数据计算）：计算第一列与第二列的欧氏距离</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>dist(t(df[,1:2]))</code></pre>
+<pre><code>##         col1
+## col2 176.054</code></pre>
+</div>
+</div>
+<div id="part-v-高级" class="section level2">
+<h2>Part V 高级</h2>
+<div id="题目101数据读取从csv文件中读取指定数据读取前10行-positionname和salary列" class="section level3">
+<h3>题目101（数据读取）：从csv文件中读取指定数据：读取前10行， positionName和salary列</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code># read.csv(&quot;datas/数据1_101-120涉及.csv&quot;, nrows = 10) %&gt;% 
+#   select(positionName, salary)
+
+# can be done
+# read_csv(&quot;datas/数据1_101-120涉及.csv&quot;, local = locale(encoding = &quot;GBK&quot;)) %&gt;%
+#   select(positionName, salary)</code></pre>
+<p><strong>注1：</strong>该数据是GBK编码，为避免中文乱码，GBK编码的csv或txt用<code>read.csv()</code>读取；UTF-8编码的csv或txt用<code>readr::read_csv()</code>读取；若用<code>read_csv()</code>读取GBK编码文件，需要设置编码（见题目101）。</p>
+<p><strong>注2：</strong>R中常规读取数据不能在读取时选择列，采用读取之后选择列。</p>
+</div>
+<div id="题目102数据读取从csv文件中读取数据将薪资大于10000的改为高" class="section level3">
+<h3>题目102（数据读取）：从csv文件中读取数据，将薪资大于10000的改为”高”</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df = read_csv(&quot;datas/数据2_101-120涉及.csv&quot;) %&gt;% 
+  mutate(薪资水平 = if_else(薪资水平 &gt; 10000, &quot;高&quot;, &quot;低&quot;))</code></pre>
+</div>
+<div id="题目103数据操作从df中对薪资水平每隔20行进行抽样" class="section level3">
+<h3>题目103（数据操作）：从df中对薪资水平每隔20行进行抽样</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code># df[seq(1, nrow(df), 20),]
+# 或者
+df %&gt;% 
+  slice(seq(1, n(), by = 20))  </code></pre>
+<pre><code>## # A tibble: 58 × 2
+##   学历要求 薪资水平
+##   &lt;chr&gt;    &lt;chr&gt;   
+## 1 本科     高      
+## 2 本科     高      
+## 3 本科     高      
+## 4 本科     高      
+## 5 本科     高      
+## 6 本科     高      
+## # … with 52 more rows</code></pre>
+</div>
+<div id="题目104数据操作取消使用科学记数法" class="section level3">
+<h3>题目104（数据操作）：取消使用科学记数法</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>set.seed(123)
+df = tibble(val = runif(10) ^ 10) 
+# 三位小数
+df %&gt;% 
+  mutate(val = scales::number(val, accuracy = 0.001))</code></pre>
+<pre><code>## # A tibble: 10 × 1
+##   val  
+##   &lt;chr&gt;
+## 1 0.000
+## 2 0.093
+## 3 0.000
+## 4 0.288
+## 5 0.541
+## 6 0.000
+## # … with 4 more rows</code></pre>
+<pre class="r"><code># 科学记数法
+df %&gt;% 
+  mutate(val =  scales::scientific(val, 2))</code></pre>
+<pre><code>## # A tibble: 10 × 1
+##   val    
+##   &lt;chr&gt;  
+## 1 3.9e-06
+## 2 9.3e-02
+## 3 1.3e-04
+## 4 2.9e-01
+## 5 5.4e-01
+## 6 3.9e-14
+## # … with 4 more rows</code></pre>
+</div>
+<div id="题目105数据操作将上一题的数据转换为百分数" class="section level3">
+<h3>题目105（数据操作）：将上一题的数据转换为百分数</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  mutate(val = scales::percent(val, 0.01))</code></pre>
+<pre><code>## # A tibble: 10 × 1
+##   val   
+##   &lt;chr&gt; 
+## 1 0.00% 
+## 2 9.27% 
+## 3 0.01% 
+## 4 28.82%
+## 5 54.13%
+## 6 0.00% 
+## # … with 4 more rows</code></pre>
+</div>
+<div id="题目106数据操作查找上一题数据中第3大值的行号" class="section level3">
+<h3>题目106（数据操作）：查找上一题数据中第3大值的行号</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code># order(df$val, decreasing = TRUE)[3]
+# 或者
+df %&gt;% 
+  mutate(id = row_number()) %&gt;% 
+  arrange(-val) %&gt;% 
+  slice(3) %&gt;% 
+  pull(id)</code></pre>
+<pre><code>## [1] 4</code></pre>
+<ul>
+<li>不兜圈子做法：</li>
+</ul>
+<pre class="r"><code>df %&gt;% 
+  arrange(-val) %&gt;% 
+  slice(3)</code></pre>
+<pre><code>## # A tibble: 1 × 1
+##     val
+##   &lt;dbl&gt;
+## 1 0.288</code></pre>
+</div>
+<div id="题目107数据操作反转df的行" class="section level3">
+<h3>题目107（数据操作）：反转df的行</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  slice(rev(1:n()))    # 或者用 n():1</code></pre>
+<pre><code>## # A tibble: 10 × 1
+##        val
+##      &lt;dbl&gt;
+## 1 3.94e- 4
+## 2 2.60e- 3
+## 3 3.20e- 1
+## 4 1.69e- 3
+## 5 3.85e-14
+## 6 5.41e- 1
+## # … with 4 more rows</code></pre>
+</div>
+<div id="题目108数据连接全连接根据多列匹配合并数据保留df1和df2的观测" class="section level3">
+<h3>题目108（数据连接：全连接）：根据多列匹配合并数据，保留df1和df2的观测</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df1 = tibble(
+  key1 = c(&quot;K0&quot;,&quot;K0&quot;,&quot;K1&quot;,&quot;K2&quot;),
+  key2 = c(&quot;K0&quot;,&quot;K1&quot;,&quot;K0&quot;,&quot;K1&quot;),
+  A = str_c(&#39;A&#39;, 0:3),
+  B = str_c(&#39;B&#39;, 0:3)
+)
+
+df2 = tibble(
+  key1 = c(&quot;K0&quot;,&quot;K1&quot;,&quot;K1&quot;,&quot;K2&quot;),
+  key2 = str_c(&quot;K&quot;, rep(0,4)),
+  C = str_c(&#39;C&#39;, 0:3),
+  D = str_c(&#39;D&#39;, 0:3)
+)
+
+df1</code></pre>
+<pre><code>## # A tibble: 4 × 4
+##   key1  key2  A     B    
+##   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;
+## 1 K0    K0    A0    B0   
+## 2 K0    K1    A1    B1   
+## 3 K1    K0    A2    B2   
+## 4 K2    K1    A3    B3</code></pre>
+<pre class="r"><code>df2</code></pre>
+<pre><code>## # A tibble: 4 × 4
+##   key1  key2  C     D    
+##   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;
+## 1 K0    K0    C0    D0   
+## 2 K1    K0    C1    D1   
+## 3 K1    K0    C2    D2   
+## 4 K2    K0    C3    D3</code></pre>
+<pre class="r"><code>df1 %&gt;% 
+  full_join(df2, by = c(&quot;key1&quot;, &quot;key2&quot;))</code></pre>
+<pre><code>## # A tibble: 6 × 6
+##   key1  key2  A     B     C     D    
+##   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;
+## 1 K0    K0    A0    B0    C0    D0   
+## 2 K0    K1    A1    B1    &lt;NA&gt;  &lt;NA&gt; 
+## 3 K1    K0    A2    B2    C1    D1   
+## 4 K1    K0    A2    B2    C2    D2   
+## 5 K2    K1    A3    B3    &lt;NA&gt;  &lt;NA&gt; 
+## 6 K2    K0    &lt;NA&gt;  &lt;NA&gt;  C3    D3</code></pre>
+</div>
+<div id="题目109数据连接左连接根据多列匹配合并数据只保留df1的观测" class="section level3">
+<h3>题目109（数据连接：左连接）：根据多列匹配合并数据，只保留df1的观测</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df1 %&gt;% 
+  left_join(df2, by = c(&quot;key1&quot;, &quot;key2&quot;))</code></pre>
+<pre><code>## # A tibble: 5 × 6
+##   key1  key2  A     B     C     D    
+##   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;
+## 1 K0    K0    A0    B0    C0    D0   
+## 2 K0    K1    A1    B1    &lt;NA&gt;  &lt;NA&gt; 
+## 3 K1    K0    A2    B2    C1    D1   
+## 4 K1    K0    A2    B2    C2    D2   
+## 5 K2    K1    A3    B3    &lt;NA&gt;  &lt;NA&gt;</code></pre>
+<p><strong>注：</strong>dplyr包还提供了右连接：<code>right_join()</code>，内连接：<code>inner_join()</code>，以及用于过滤的连接：半连接：<code>semi_join()</code>，反连接：<code>anti_join()</code>.</p>
+</div>
+<div id="题目110数据处理再次读取数据1并显示所有列" class="section level3">
+<h3>题目110（数据处理）：再次读取数据1并显示所有列</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df = read_csv(&quot;datas/数据1_101-120涉及.csv&quot;, 
+          locale = locale(encoding = &quot;GBK&quot;)) %&gt;%
+glimpse()</code></pre>
+<pre><code>## Rows: 105
+## Columns: 53
+## $ positionId            &lt;dbl&gt; 6802721, 5204912, 6877668, 6496141, 6467417, 688…
+## $ positionName          &lt;chr&gt; &quot;数据分析&quot;, &quot;数据建模&quot;, &quot;数据分析&quot;, &quot;数据分析&quot;, …
+## $ companyId             &lt;dbl&gt; 475770, 50735, 100125, 26564, 29211, 94826, 3487…
+## $ companyLogo           &lt;chr&gt; &quot;i/image2/M01/B7/3E/CgoB5lwPfEaAdn8WAABWQ0Jgl5s3…
+## $ companySize           &lt;chr&gt; &quot;50-150人&quot;, &quot;150-500人&quot;, &quot;2000人以上&quot;, &quot;500-2000…
+## $ industryField         &lt;chr&gt; &quot;移动互联网,电商&quot;, &quot;电商&quot;, &quot;移动互联网,企业服务&quot;…
+## $ financeStage          &lt;chr&gt; &quot;A轮&quot;, &quot;B轮&quot;, &quot;上市公司&quot;, &quot;D轮及以上&quot;, &quot;上市公司…
+## $ companyLabelList      &lt;chr&gt; &quot;[&#39;绩效奖金&#39;, &#39;带薪年假&#39;, &#39;定期体检&#39;, &#39;弹性工作&#39;…
+## $ firstType             &lt;chr&gt; &quot;产品|需求|项目类&quot;, &quot;开发|测试|运维类&quot;, &quot;产品|需…
+## $ secondType            &lt;chr&gt; &quot;数据分析&quot;, &quot;数据开发&quot;, &quot;数据分析&quot;, &quot;数据开发&quot;, …
+## $ thirdType             &lt;chr&gt; &quot;数据分析&quot;, &quot;建模&quot;, &quot;数据分析&quot;, &quot;数据分析&quot;, &quot;数…
+## $ skillLables           &lt;chr&gt; &quot;[&#39;SQL&#39;, &#39;数据库&#39;, &#39;数据运营&#39;, &#39;BI&#39;]&quot;, &quot;[&#39;算法&#39;,…
+## $ positionLables        &lt;chr&gt; &quot;[&#39;电商&#39;, &#39;社交&#39;, &#39;SQL&#39;, &#39;数据库&#39;, &#39;数据运营&#39;, &#39;…
+## $ industryLables        &lt;chr&gt; &quot;[&#39;电商&#39;, &#39;社交&#39;, &#39;SQL&#39;, &#39;数据库&#39;, &#39;数据运营&#39;, &#39;…
+## $ createTime            &lt;chr&gt; &quot;2020/3/16 11:00&quot;, &quot;2020/3/16 11:08&quot;, &quot;2020/3/16…
+## $ formatCreateTime      &lt;chr&gt; &quot;11:00发布&quot;, &quot;11:08发布&quot;, &quot;10:33发布&quot;, &quot;10:10发…
+## $ district              &lt;chr&gt; &quot;余杭区&quot;, &quot;滨江区&quot;, &quot;江干区&quot;, &quot;江干区&quot;, &quot;余杭区&quot;…
+## $ businessZones         &lt;chr&gt; &quot;[&#39;仓前&#39;]&quot;, &quot;[&#39;西兴&#39;, &#39;长河&#39;]&quot;, &quot;[&#39;四季青&#39;, &#39;钱…
+## $ salary                &lt;dbl&gt; 37500, 15000, 3500, 45000, 30000, 50000, 30000, …
+## $ workYear              &lt;chr&gt; &quot;1-3年&quot;, &quot;3-5年&quot;, &quot;1-3年&quot;, &quot;3-5年&quot;, &quot;3-5年&quot;, &quot;1-…
+## $ jobNature             &lt;chr&gt; &quot;全职&quot;, &quot;全职&quot;, &quot;全职&quot;, &quot;全职&quot;, &quot;全职&quot;, &quot;全职&quot;, …
+## $ education             &lt;chr&gt; &quot;本科&quot;, &quot;本科&quot;, &quot;本科&quot;, &quot;本科&quot;, &quot;大专&quot;, &quot;本科&quot;, …
+## $ positionAdvantage     &lt;chr&gt; &quot;五险一金、弹性工作、带薪年假、年度体检&quot;, &quot;六险…
+## $ imState               &lt;chr&gt; &quot;today&quot;, &quot;disabled&quot;, &quot;today&quot;, &quot;threeDays&quot;, &quot;disa…
+## $ lastLogin             &lt;chr&gt; &quot;2020/3/16 11:00&quot;, &quot;2020/3/16 11:08&quot;, &quot;2020/3/16…
+## $ publisherId           &lt;dbl&gt; 12022406, 5491688, 5322583, 9814560, 6392394, 11…
+## $ approve               &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
+## $ subwayline            &lt;chr&gt; NA, NA, &quot;4号线&quot;, &quot;1号线&quot;, NA, NA, NA, &quot;2号线&quot;, N…
+## $ stationname           &lt;chr&gt; NA, NA, &quot;江锦路&quot;, &quot;文泽路&quot;, NA, NA, NA, &quot;丰潭路&quot;…
+## $ linestaion            &lt;chr&gt; NA, NA, &quot;4号线_城星路;4号线_市民中心;4号线_江锦…
+## $ latitude              &lt;dbl&gt; 30.27842, 30.18804, 30.24152, 30.29940, 30.28295…
+## $ longitude             &lt;dbl&gt; 120.0059, 120.2012, 120.2125, 120.3503, 120.0098…
+## $ hitags                &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ resumeProcessRate     &lt;dbl&gt; 50, 23, 11, 100, 20, 16, 100, 1, 83, 1, 83, 0, 1…
+## $ resumeProcessDay      &lt;dbl&gt; 1, 1, 4, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, …
+## $ score                 &lt;dbl&gt; 233, 176, 80, 68, 66, 66, 65, 47, 24, 18, 17, 17…
+## $ newScore              &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+## $ matchScore            &lt;dbl&gt; 15.1018750, 32.5594140, 14.9723570, 12.8741530, …
+## $ matchScoreExplain     &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ query                 &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ explain               &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ isSchoolJob           &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, …
+## $ adWord                &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+## $ plus                  &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ pcShow                &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+## $ appShow               &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+## $ deliver               &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+## $ gradeDescription      &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ promotionScoreExplain &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ isHotHire             &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+## $ count                 &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+## $ aggregatePositionIds  &lt;chr&gt; &quot;[]&quot;, &quot;[]&quot;, &quot;[]&quot;, &quot;[]&quot;, &quot;[]&quot;, &quot;[]&quot;, &quot;[]&quot;, &quot;[]&quot;, …
+## $ famousCompany         &lt;lgl&gt; FALSE, FALSE, FALSE, TRUE, TRUE, FALSE, FALSE, T…</code></pre>
+</div>
+<div id="题目111数据操作查找secondtype与thirdtype值相等的行号" class="section level3">
+<h3>题目111（数据操作）：查找secondType与thirdType值相等的行号</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code># which(df$secondType == df$thirdType)
+# 或者
+df %&gt;% 
+  mutate(id = row_number()) %&gt;% 
+  filter(secondType == thirdType) %&gt;% 
+  pull(id)</code></pre>
+<pre><code>##  [1]   1   3   5   6   7  11  15  24  26  28  29  30  31  34  38  39  40  41  42
+## [20]  49  50  53  54  56  58  62  66  67  68  72  74  75  76  80  81  83  86  89
+## [39]  90  92  97 101</code></pre>
+<ul>
+<li>不兜圈子：</li>
+</ul>
+<pre class="r"><code>df %&gt;% 
+  filter(secondType == thirdType)</code></pre>
+<pre><code>## # A tibble: 42 × 53
+##   positionId positionName companyId companyLogo        companySize industryField
+##        &lt;dbl&gt; &lt;chr&gt;            &lt;dbl&gt; &lt;chr&gt;              &lt;chr&gt;       &lt;chr&gt;        
+## 1    6802721 数据分析        475770 i/image2/M01/B7/3… 50-150人    移动互联网,… 
+## 2    6877668 数据分析        100125 image2/M00/0C/57/… 2000人以上  移动互联网,… 
+## 3    6467417 数据分析         29211 i/image2/M01/77/B… 2000人以上  物流丨运输   
+## 4    6882347 数据分析         94826 image2/M00/04/12/… 50-150人    移动互联网,… 
+## 5    6841659 数据分析        348784 i/image2/M01/AC/0… 50-150人    移动互联网,… 
+## 6    6804629 数据分析师       34132 i/image2/M01/F8/D… 150-500人   数据服务,广… 
+## # … with 36 more rows, and 47 more variables: financeStage &lt;chr&gt;,
+## #   companyLabelList &lt;chr&gt;, firstType &lt;chr&gt;, secondType &lt;chr&gt;, thirdType &lt;chr&gt;,
+## #   skillLables &lt;chr&gt;, positionLables &lt;chr&gt;, industryLables &lt;chr&gt;,
+## #   createTime &lt;chr&gt;, formatCreateTime &lt;chr&gt;, district &lt;chr&gt;,
+## #   businessZones &lt;chr&gt;, salary &lt;dbl&gt;, workYear &lt;chr&gt;, jobNature &lt;chr&gt;,
+## #   education &lt;chr&gt;, positionAdvantage &lt;chr&gt;, imState &lt;chr&gt;, lastLogin &lt;chr&gt;,
+## #   publisherId &lt;dbl&gt;, approve &lt;dbl&gt;, subwayline &lt;chr&gt;, stationname &lt;chr&gt;, …</code></pre>
+</div>
+<div id="题目112数据操作查找薪资大于平均薪资的第三个数据" class="section level3">
+<h3>题目112（数据操作）：查找薪资大于平均薪资的第三个数据</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  filter(salary &gt; mean(salary)) %&gt;% 
+  slice(3)</code></pre>
+<pre><code>## # A tibble: 1 × 53
+##   positionId positionName companyId companyLogo        companySize industryField
+##        &lt;dbl&gt; &lt;chr&gt;            &lt;dbl&gt; &lt;chr&gt;              &lt;chr&gt;       &lt;chr&gt;        
+## 1    6882347 数据分析         94826 image2/M00/04/12/… 50-150人    移动互联网,… 
+## # … with 47 more variables: financeStage &lt;chr&gt;, companyLabelList &lt;chr&gt;,
+## #   firstType &lt;chr&gt;, secondType &lt;chr&gt;, thirdType &lt;chr&gt;, skillLables &lt;chr&gt;,
+## #   positionLables &lt;chr&gt;, industryLables &lt;chr&gt;, createTime &lt;chr&gt;,
+## #   formatCreateTime &lt;chr&gt;, district &lt;chr&gt;, businessZones &lt;chr&gt;, salary &lt;dbl&gt;,
+## #   workYear &lt;chr&gt;, jobNature &lt;chr&gt;, education &lt;chr&gt;, positionAdvantage &lt;chr&gt;,
+## #   imState &lt;chr&gt;, lastLogin &lt;chr&gt;, publisherId &lt;dbl&gt;, approve &lt;dbl&gt;,
+## #   subwayline &lt;chr&gt;, stationname &lt;chr&gt;, linestaion &lt;chr&gt;, latitude &lt;dbl&gt;, …</code></pre>
+</div>
+<div id="题目113数据操作将上一题数据的salary列开根号" class="section level3">
+<h3>题目113（数据操作）：将上一题数据的salary列开根号</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  mutate(salary_sqrt = sqrt(salary)) %&gt;% 
+  select(salary, salary_sqrt)</code></pre>
+<pre><code>## # A tibble: 105 × 2
+##   salary salary_sqrt
+##    &lt;dbl&gt;       &lt;dbl&gt;
+## 1  37500       194. 
+## 2  15000       122. 
+## 3   3500        59.2
+## 4  45000       212. 
+## 5  30000       173. 
+## 6  50000       224. 
+## # … with 99 more rows</code></pre>
+</div>
+<div id="题目114数据操作将上一题数据的linestation列按_拆分" class="section level3">
+<h3>题目114（数据操作）：将上一题数据的linestation列按_拆分</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  separate(linestaion, into = c(&quot;line&quot;, &quot;station&quot;), sep = &quot;_&quot;, remove = FALSE) %&gt;% 
+  select(linestaion, line, station)</code></pre>
+<pre><code>## # A tibble: 105 × 3
+##   linestaion                               line  station     
+##   &lt;chr&gt;                                    &lt;chr&gt; &lt;chr&gt;       
+## 1 &lt;NA&gt;                                     &lt;NA&gt;  &lt;NA&gt;        
+## 2 &lt;NA&gt;                                     &lt;NA&gt;  &lt;NA&gt;        
+## 3 4号线_城星路;4号线_市民中心;4号线_江锦路 4号线 城星路;4号线
+## 4 1号线_文泽路                             1号线 文泽路      
+## 5 &lt;NA&gt;                                     &lt;NA&gt;  &lt;NA&gt;        
+## 6 &lt;NA&gt;                                     &lt;NA&gt;  &lt;NA&gt;        
+## # … with 99 more rows</code></pre>
+<p><strong>注：</strong>正常需要先按”;“分割，再分别按”-“分割。</p>
+</div>
+<div id="题目115数据查看查看上一题数据一共有多少列" class="section level3">
+<h3>题目115（数据查看）：查看上一题数据一共有多少列</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>ncol(df)</code></pre>
+<pre><code>## [1] 53</code></pre>
+</div>
+<div id="题目116数据操作提取industryfield列以数据开头的行" class="section level3">
+<h3>题目116（数据操作）：提取industryField列以”数据”开头的行</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  filter(str_detect(industryField, &quot;^数据&quot;))</code></pre>
+<pre><code>## # A tibble: 15 × 53
+##   positionId positionName   companyId companyLogo      companySize industryField
+##        &lt;dbl&gt; &lt;chr&gt;              &lt;dbl&gt; &lt;chr&gt;            &lt;chr&gt;       &lt;chr&gt;        
+## 1    6458372 数据分析专家       34132 i/image2/M01/F8… 150-500人   数据服务,广… 
+## 2    6804629 数据分析师         34132 i/image2/M01/F8… 150-500人   数据服务,广… 
+## 3    6804489 资深数据分析师     34132 i/image2/M01/F8… 150-500人   数据服务,广… 
+## 4    6267370 数据分析专家       31544 image1/M00/00/4… 150-500人   数据服务     
+## 5    6804489 资深数据分析师     34132 i/image2/M01/F8… 150-500人   数据服务,广… 
+## 6    6242470 数据分析师         31544 image1/M00/00/4… 150-500人   数据服务     
+## # … with 9 more rows, and 47 more variables: financeStage &lt;chr&gt;,
+## #   companyLabelList &lt;chr&gt;, firstType &lt;chr&gt;, secondType &lt;chr&gt;, thirdType &lt;chr&gt;,
+## #   skillLables &lt;chr&gt;, positionLables &lt;chr&gt;, industryLables &lt;chr&gt;,
+## #   createTime &lt;chr&gt;, formatCreateTime &lt;chr&gt;, district &lt;chr&gt;,
+## #   businessZones &lt;chr&gt;, salary &lt;dbl&gt;, workYear &lt;chr&gt;, jobNature &lt;chr&gt;,
+## #   education &lt;chr&gt;, positionAdvantage &lt;chr&gt;, imState &lt;chr&gt;, lastLogin &lt;chr&gt;,
+## #   publisherId &lt;dbl&gt;, approve &lt;dbl&gt;, subwayline &lt;chr&gt;, stationname &lt;chr&gt;, …</code></pre>
+</div>
+<div id="题目117数据分组汇总以salary-score和positionid做数据透视表" class="section level3">
+<h3>题目117（数据分组汇总）：以salary score和positionID做数据透视表</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  group_by(positionId) %&gt;% 
+  summarise(salary_avg = mean(salary),
+            score_avg = mean(score))</code></pre>
+<pre><code>## # A tibble: 95 × 3
+##   positionId salary_avg score_avg
+##        &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;
+## 1    5203054      30000         4
+## 2    5204912      15000       176
+## 3    5269002      37500         1
+## 4    5453691      30000         4
+## 5    5519962      37500        14
+## 6    5520623      30000         6
+## # … with 89 more rows</code></pre>
+</div>
+<div id="题目118数据分组汇总同时对salaryscore两列进行汇总计算" class="section level3">
+<h3>题目118（数据分组汇总）：同时对salary、score两列进行汇总计算</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  summarise(across(c(salary, score), 
+                   list(sum=sum, mean=mean, min=min), 
+                   .names = &quot;{.col}_{.fn}&quot;))</code></pre>
+<pre><code>## # A tibble: 1 × 6
+##   salary_sum salary_mean salary_min score_sum score_mean score_min
+##        &lt;dbl&gt;       &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;
+## 1    3331000      31724.       3500      1335       12.7         0</code></pre>
+<p><strong>注：</strong>若要分组再这样汇总，前面加上<code>group_by(var)</code>即可。</p>
+</div>
+<div id="题目119数据分组汇总同时对不同列进行不同的汇总计算对salary求平均对score求和" class="section level3">
+<h3>题目119（数据分组汇总）：同时对不同列进行不同的汇总计算：对salary求平均，对score求和</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  summarise(salary_avg = mean(salary),
+            score_sum = sum(score))</code></pre>
+<pre><code>## # A tibble: 1 × 2
+##   salary_avg score_sum
+##        &lt;dbl&gt;     &lt;dbl&gt;
+## 1     31724.      1335</code></pre>
+<p><strong>注：</strong>若要分组再这样汇总，前面加上<code>group_by(var)</code>即可。</p>
+</div>
+<div id="题目120数据分组汇总计算并提取平均薪资最高的区" class="section level3">
+<h3>题目120（数据分组汇总）：计算并提取平均薪资最高的区</h3>
+<p><strong>难度：</strong><span class="math inline">\(\star\star\star\star\)</span></p>
+<p><strong>代码及运行结果：</strong></p>
+<pre class="r"><code>df %&gt;% 
+  group_by(district) %&gt;% 
+  summarise(salary_avg = mean(salary)) %&gt;% 
+  slice_max(salary_avg)</code></pre>
+<pre><code>## # A tibble: 1 × 2
+##   district salary_avg
+##   &lt;chr&gt;         &lt;dbl&gt;
+## 1 萧山区        36250</code></pre>
+</div>
+</div>
+<div class="footnotes footnotes-end-of-document">
+<hr />
+<ol>
+<li id="fn1"><p>张静信的 Github: <a href="https://github.com/zhjx19" class="uri">https://github.com/zhjx19</a><a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p>张静信的知乎: <a href="https://www.zhihu.com/people/huc_zhangjingxin" class="uri">https://www.zhihu.com/people/huc_zhangjingxin</a><a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
