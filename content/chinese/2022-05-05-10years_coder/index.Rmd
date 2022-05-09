@@ -1,0 +1,165 @@
+---
+title: 活在终端
+author: whve
+date: '2022-05-05'
+slug: ''
+categories: []
+tags: []
+---
+
+test123
+ 
+有些人的工作一直在电脑前，在网络世界随心所欲，称其为活在终端不过分吧。
+
+打造信息茧房。
+
+#book
+#由简入易：十年学会编程
+2022-?，熟悉了GitHub，学习外语，开始看源码，直到学会编程（C++、Java、html、JavaScript etc）。自动化代码，活在终端。
+2020-2022，生物信息工作，一些软件使用及数据框操作。
+2017-2020，读研期间，了解了一些python&R的print(“hello world”)，靠着这些基础完成了两篇SCI的数据分析。
+2013-2017，本科初涉编程，大二入门语言C语言，后自学通过计算机二级考试，大三学习了Matlab。
+
+易：
+选题，收集数据，处理数据框。
+
+做代码的搬运工，完成SCI。
+
+简：
+看R包的简介，拓展知识面。
+
+开始接触原理，自己写函数，用GitHub管理代码，最终将自己的函数打包成R包。
+
+感悟：通常来说，编程由简入易。可是对于我来说，走了弯路。
+在此，我将重新整理R的知识，按照由简入易的顺序。
+
+#第一年
+##tidyverse 生态
+###import&output
+### dataflame&tibble
+### key words - package 
+```{r, eval = FALSE}
+library(tidyverse)
+help(package="tidyverse")
+help(package="dplyr")
+help(package="tidyr")
+help(package="tibble")
+help(package="ggplot2")
+
+#查看函数源代码：
+group_by # or F2
+page(group_by)
+
+group_by<-edit(group_by) # edit
+
+###
+mean
+methods(mean)
+mean.default
+
+getAnywhere(group_by)
+getAnywhere(pivot_longer)
+# A single object matching ‘pivot_longer’ was found
+# It was found in the following places
+#   package:tidyr
+#   namespace:tidyr
+# with value
+# 
+# function (data, cols, names_to = "name", names_prefix = NULL, 
+#     names_sep = NULL, names_pattern = NULL, names_ptypes = NULL, 
+#     names_transform = NULL, names_repair = "check_unique", values_to = "value", 
+#     values_drop_na = FALSE, values_ptypes = NULL, values_transform = NULL, 
+#     ...) 
+# {
+#     ellipsis::check_dots_used()
+#     UseMethod("pivot_longer")
+# }
+# <bytecode: 0x7fcf928244c0>
+# <environment: namespace:tidyr>
+help(pivot_longer)
+?pivot_longer
+??pivot_longer
+
+```
+#第二年
+背单词
+key word。
+
+
+Transform or tidy
+dplyr or tidyr
+
+## dplyr function
+name story:
+
+
+> [The d is for dataframes, the plyr is to evoke pliers. Pronounce however you like.](https://github.com/tidyverse/dplyr/issues/1857)
+
+[dtplyr](https://dtplyr.tidyverse.org/)
+Overview
+dplyr is a grammar of data manipulation, providing a consistent set of verbs that help you solve the most common data manipulation challenges:
+
+mutate() adds new variables that are functions of existing variables
+select() picks variables based on their names.
+filter() picks cases based on their values.
+summarise() reduces multiple values down to a single summary.
+arrange() changes the ordering of the rows.
+These all combine naturally with group_by() which allows you to perform any operation “by group”. You can learn more about them in vignette("dplyr"). As well as these single-table verbs, dplyr also provides a variety of two-table verbs, which you can learn about in vignette("two-table").
+
+If you are new to dplyr, the best place to start is the data transformation chapter in R for data science.
+
+
+4.2 Rows
+4.2.1 filter()
+4.2.2 Common mistakes
+4.2.3 arrange()
+4.3 Columns
+4.3.1 mutate()
+4.3.2 select()
+4.3.3 rename()
+4.3.4 relocate()
+4.4 Groups
+4.4.1 group_by()
+4.4.2 summarise()
+4.4.3 The slice_ functions
+4.4.4 Grouping by multiple variables
+4.4.5 Ungrouping
+4.5 Case study: aggregates and sample size
+
+
+## tidyr functions fall into five main categories:
+
+“Pivotting” which converts between long and wide forms. tidyr 1.0.0 introduces pivot_longer() and pivot_wider(), replacing the older spread() and gather() functions. See vignette("pivot") for more details.
+
+“Rectangling”, which turns deeply nested lists (as from JSON) into tidy tibbles. See unnest_longer(), unnest_wider(), hoist(), and vignette("rectangle") for more details.
+
+Nesting converts grouped data to a form where each group becomes a single row containing a nested data frame, and unnesting does the opposite. See nest(), unnest(), and vignette("nest") for more details.
+
+Splitting and combining character columns. Use separate() and extract() to pull a single character column into multiple columns; use unite() to combine multiple columns into a single character column.
+
+Make implicit missing values explicit with complete(); make explicit missing values implicit with drop_na(); replace missing values with next/previous value with fill(), or a known value with replace_na().
+
+
+## ggplot   
+It’s hard to succinctly describe how ggplot2 works because it embodies a deep philosophy of visualisation. However, in most cases you start with ggplot(), supply a dataset and aesthetic mapping (with aes()). You then add on layers (like geom_point() or geom_histogram()), scales (like scale_colour_brewer()), faceting specifications (like facet_wrap()) and coordinate systems (like coord_flip()).
+
+
+## function all
+
+https://dplyr.tidyverse.org/reference/
+
+
+# 第n年 r package
+
+```{r, eval = FLASE}
+#install.packages("bruceR")
+#list data set
+data(package = .packages(TRUE))
+
+tidyverse_packages(include_self = TRUE)
+```
+
+# gwas
+
+
+# 参考文献
